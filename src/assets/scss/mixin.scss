@@ -1,0 +1,55 @@
+@charset "utf-8";
+
+// media queries
+@mixin tb {
+    @media screen and (min-width: 768px) {
+        @content;
+    }
+}
+
+@mixin pc {
+    @media screen and (min-width: 1180px) {
+        @content;
+    }
+}
+
+// fonts
+@mixin rg-r {
+    font-family: roc-grotesk, sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    line-height: 1;
+}
+
+@mixin rg-w_eb {
+    font-family: roc-grotesk-wide, sans-serif;
+    font-weight: 700;
+    font-style: normal;
+    line-height: 1;
+}
+
+@mixin rg-w_m {
+    font-family: roc-grotesk-wide, sans-serif;
+    font-weight: 500;
+    font-style: normal;
+    line-height: 1;
+}
+
+@mixin rg-ew {
+    font-family: roc-grotesk-extrawide, sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    line-height: 1;
+}
+
+@mixin ns_m {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 500;
+    font-style: normal;
+}
+
+@mixin ns_b {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 700;
+    font-style: normal;
+}
