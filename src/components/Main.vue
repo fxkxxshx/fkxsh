@@ -34,7 +34,7 @@
         <article class="work__item">
           <a class="work__itemAnchor" href="https://hub.vroid.com/characters/4330353218286595151/models/5206088754084071958" target="_blank">
             <div class="work__itemLeft" v-scroll="onScrollShow">
-              <p class="work__thumb"><img v-lazy="require('@/assets/img/work/thumb_02.jpg')" alt="" height="1080" width="1920"></p>
+              <p class="work__thumb"><img src="@/assets/img/work/thumb_02.jpg" alt="" height="1080" width="1920"></p>
             </div>
             <div class="work__itemRight" v-scroll="onScrollShow">
               <p class="work__name"><span class="work__nameInner">ふかいしのキャラクター</span></p>
@@ -45,7 +45,7 @@
         <article class="work__item">
           <a class="work__itemAnchor" href="https://fkxsh.com" target="_blank">
             <div class="work__itemLeft" v-scroll="onScrollShow">
-              <p class="work__thumb"><img v-lazy="require('@/assets/img/work/thumb_01.jpg')" alt="" height="1080" width="1920"></p>
+              <p class="work__thumb"><img src="@/assets/img/work/thumb_01.jpg" alt="" height="1080" width="1920"></p>
             </div>
             <div class="work__itemRight" v-scroll="onScrollShow">
               <p class="work__name"><span class="work__nameInner">ふかいしのWebサイト</span></p>
@@ -55,23 +55,11 @@
         </article>
       </div>
     </section>
-    <p class="qr"><img v-lazy="require('@/assets/img/qr/qr.svg')" alt="" height="50px" width="50px"></p>
+    <p class="qr"><img src="@/assets/img/qr/qr.svg" alt="" height="50px" width="50px"></p>
   </main>
 </template>
 
 <script>
-import Vue from 'vue';
-import VueLazyload from 'vue-lazyload';
-
-Vue.use(VueLazyload, {
-  observer: true,
-  observerOptions: {
-    root: null,
-    rootMargin: '500px',
-    threshold: 0.0
-  }
-});
-
 export default {
   name: 'Main',
   directives: {
