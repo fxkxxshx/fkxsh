@@ -82,29 +82,29 @@ export default {
     animate () {
       requestAnimationFrame(this.animate);
 
-      this.camera.position.x += (this.mouseX - this.camera.position.x) * .00035;
-      this.camera.position.y += (- this.mouseY - this.camera.position.y) * .00035;
+      this.camera.position.x += (this.mouseX - this.camera.position.x) * .0003;
+      this.camera.position.y += (- this.mouseY - this.camera.position.y) * .0003;
 
-      if (this.camera.position.x > 2.5) {
-        this.camera.position.x = 2.5;
+      if (this.camera.position.x > 3.0) {
+        this.camera.position.x = 3.0;
       }
-      if (this.camera.position.x < -2.5) { 
-        this.camera.position.x = -2.5;
+      if (this.camera.position.x < -3.0) { 
+        this.camera.position.x = -3.0;
       }
 
-      if (this.camera.position.y > 3.2) {
-        this.camera.position.y = 3.2;
+      if (this.camera.position.y > 3.7) {
+        this.camera.position.y = 3.7;
       }
-      if (this.camera.position.y < -1.8) { 
-        this.camera.position.y = -1.8;
+      if (this.camera.position.y < -2.3) { 
+        this.camera.position.y = -2.3;
       }
 
       this.camera.lookAt(new THREE.Vector3(0, 0.7, 0));
       this.renderer.render(this.scene, this.camera );
     }, 
     onDocumentMouseMove (event) {
-      this.mouseX = (event.clientX - this.windowHalfX) / 2;
-      this.mouseY = (event.clientY - this.windowHalfY) / 2;
+      this.mouseX = -(event.clientX - this.windowHalfX) / 2;
+      this.mouseY = -(event.clientY - this.windowHalfY) / 2;
     },
     onResize () {
       this.renderer.setSize(window.innerWidth, window.innerHeight);
