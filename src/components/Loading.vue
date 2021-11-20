@@ -38,7 +38,7 @@ export default {
 
 .loading {
   align-items: center;
-  background: $oreRed;
+  background: $mainColor;
   display: flex;
   height: 100vh;
   justify-content: center;
@@ -59,7 +59,7 @@ export default {
 
   &__text {
     animation: loadingText 0.2s infinite linear;
-    color: $oreWhite;
+    color: $subColor;
     font-size: 18px;
     opacity: 1;
     @include tb {

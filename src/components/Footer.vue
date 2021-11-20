@@ -19,7 +19,7 @@ export default {
 
   &__copy {
     bottom: 25px;
-    color: $oreRed;
+    color: $mainColor;
     font-size: 10px;
     margin: 0;
     padding: 0;

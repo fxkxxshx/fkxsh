@@ -51,8 +51,8 @@ export default {
       this.$refs.chara.appendChild(this.renderer.domElement);
       // camera
       this.camera.position.x = 0.0;
-      this.camera.position.y = 0.7;
-      this.camera.position.z = 5.0;
+      this.camera.position.y = 1.0;
+      this.camera.position.z = 6.0;
       // light
       this.light.position.set(1.0, 1.0, 1.0).normalize();
       this.scene.add(this.light);
@@ -73,6 +73,7 @@ export default {
       );
 
       document.addEventListener('mousemove', this.onDocumentMouseMove);
+      document.addEventListener('touchstart', this.onTouch);
       window.addEventListener('resize', this.onResize);
       window.addEventListener('deviceorientation', this.onGyro);
 
@@ -82,29 +83,36 @@ export default {
     animate () {
       requestAnimationFrame(this.animate);
 
-      this.camera.position.x += (this.mouseX - this.camera.position.x) * .0003;
-      this.camera.position.y += (- this.mouseY - this.camera.position.y) * .0003;
+      this.camera.position.x += (this.mouseX - this.camera.position.x) * .00035;
+      this.camera.position.y += (- this.mouseY - this.camera.position.y) * .00035;
 
-      if (this.camera.position.x > 3.0) {
-        this.camera.position.x = 3.0;
+      if (this.camera.position.x > 4.0) {
+        this.camera.position.x = 4.0;
       }
-      if (this.camera.position.x < -3.0) { 
-        this.camera.position.x = -3.0;
-      }
-
-      if (this.camera.position.y > 3.7) {
-        this.camera.position.y = 3.7;
-      }
-      if (this.camera.position.y < -2.3) { 
-        this.camera.position.y = -2.3;
+      if (this.camera.position.x < -4.0) { 
+        this.camera.position.x = -4.0;
       }
 
-      this.camera.lookAt(new THREE.Vector3(0, 0.7, 0));
+      if (this.camera.position.y > 4.7) {
+        this.camera.position.y = 4.7;
+      }
+      if (this.camera.position.y < -3.3) { 
+        this.camera.position.y = -3.3;
+      }
+
+      this.camera.lookAt(new THREE.Vector3(0, 0.85, 0));
       this.renderer.render(this.scene, this.camera );
     }, 
     onDocumentMouseMove (event) {
       this.mouseX = -(event.clientX - this.windowHalfX) / 2;
       this.mouseY = -(event.clientY - this.windowHalfY) / 2;
+    },
+    onTouch (event) {
+      if (event.targetTouches.length == 1) {
+        const touch = event.targetTouches[0];
+        this.mouseX = -(touch.pageX - this.windowHalfX) / 2;
+        this.mouseY = -(touch.pageY - this.windowHalfY) / 2;
+      }
     },
     onResize () {
       this.renderer.setSize(window.innerWidth, window.innerHeight);

@@ -20,7 +20,7 @@
         </article>
         <article class="about__item">
           <p class="about__name" v-scroll="onScrollShow"><span class="about__nameInner">不快指数</span></p>
-          <p class="about__text" v-scroll="onScrollShow"><span class="about__textInner">ふかいし主催のサークルです。とりあえず名前だけ決まってます。何かできると良いですね。</span></p>
+          <p class="about__text" v-scroll="onScrollShow"><span class="about__textInner">ふかいし主宰のサークルです。とりあえず名前だけ決まってます。何かできると良いですね。</span></p>
         </article>
       </div>
     </section>
@@ -32,13 +32,13 @@
       </div>
       <div class="work__right" id="work">
         <article class="work__item">
-          <a class="work__itemAnchor" href="https://hub.vroid.com/characters/4330353218286595151/models/5206088754084071958" target="_blank">
+          <a class="work__itemAnchor" href="https://hub.vroid.com/characters/6370052186432543582/models/3982772858169024897" target="_blank">
             <div class="work__itemLeft" v-scroll="onScrollShow">
               <p class="work__thumb"><img src="@/assets/img/work/thumb_02.jpg" alt="" height="1080" width="1920"></p>
             </div>
             <div class="work__itemRight" v-scroll="onScrollShow">
               <p class="work__name"><span class="work__nameInner">ふかいしのキャラクター</span></p>
-              <p class="work__text"><span class="work__textInner">2021.05 / VRoid Studio</span></p>
+              <p class="work__text"><span class="work__textInner">2021.11 / VRoid Studio</span></p>
             </div>
           </a>
         </article>
@@ -145,7 +145,7 @@ export default {
       }
 
       &::before {
-        background: $oreRed;
+        background: $mainColor;
         content: '';
         height: 100%;
         left: 5px;
@@ -176,8 +176,8 @@ export default {
       }
 
       &::before {
-        background: $oreWhite;
-        border: 3px solid $oreRed;
+        background: $subColor;
+        border: 3px solid $mainColor;
         border-radius: 50%;
         box-sizing: border-box;
         content: '';
@@ -194,7 +194,7 @@ export default {
       }
 
       &::after {
-        color: $oreRed;
+        color: $mainColor;
         content: '';
         font-size: 10px;
         left: -42px;
@@ -236,12 +236,12 @@ export default {
         }
 
         .about__nameInner {
-          color: $oreWhite;
+          color: $subColor;
         }
       }
 
       &::before {
-        background: $oreRed;
+        background: $mainColor;
         bottom: 0;
         content: '';
         height: 1px;
@@ -257,7 +257,7 @@ export default {
       }
 
       &Inner {
-        background: $oreRed;
+        background: $mainColor;
         color: transparent;
         font-size: 24px;
         box-decoration-break: clone;
@@ -294,7 +294,7 @@ export default {
         }
 
         .about__textInner {
-          color: $oreWhite;
+          color: $subColor;
         }
       }
 
@@ -307,7 +307,7 @@ export default {
         }
 
         &::before {
-          background: $oreRed;
+          background: $mainColor;
           bottom: 0;
           content: '';
           height: 1px;
@@ -324,7 +324,7 @@ export default {
       }
 
       &Inner {
-        background: $oreRed;
+        background: $mainColor;
         color: transparent;
         font-size: 14px;
         box-decoration-break: clone;
@@ -357,7 +357,7 @@ export default {
       }
 
       &::before {
-        background: $oreRed;
+        background: $mainColor;
         bottom: 0;
         content: '';
         height: 1px;
@@ -383,7 +383,7 @@ export default {
         transform: scale(1, 1);
 
         .about__listAnchor {
-          color: $oreWhite;
+          color: $subColor;
 
           &::before {
             opacity: 1;
@@ -418,7 +418,7 @@ export default {
         }
 
         &::before {
-          background: $oreWhite;
+          background: $subColor;
           bottom: -1px;
           content: '';
           height: 1px;
@@ -433,7 +433,7 @@ export default {
       }
 
       &Inner {
-        background: $oreRed;
+        background: $mainColor;
         font-size: 14px;
         box-decoration-break: clone;
         display: inline;
@@ -492,7 +492,7 @@ export default {
       }
 
       &::before {
-        background: $oreRed;
+        background: $mainColor;
         content: '';
         height: 100%;
         left: 5px;
@@ -523,8 +523,8 @@ export default {
       }
 
       &::before {
-        background: $oreWhite;
-        border: 3px solid $oreRed;
+        background: $subColor;
+        border: 3px solid $mainColor;
         border-radius: 50%;
         box-sizing: border-box;
         content: '';
@@ -541,7 +541,7 @@ export default {
       }
 
       &::after {
-        color: $oreRed;
+        color: $mainColor;
         content: '#1';
         font-size: 10px;
         left: -42px;
@@ -564,7 +564,7 @@ export default {
       }
 
       &Anchor {
-        color: $oreWhite;
+        color: $subColor;
         text-decoration: none;
         @include pc {
           display: flex;
@@ -646,7 +646,7 @@ export default {
           }
 
           .work__nameInner {
-            color: $oreWhite;
+            color: $subColor;
           }
 
           .work__text {
@@ -661,14 +661,14 @@ export default {
           }
 
           .work__textInner {
-            color: $oreWhite;
+            color: $subColor;
           }
         }
       }
     }
 
     &__thumb {
-      border: 1px solid $oreRed;
+      border: 1px solid $mainColor;
       border-radius: 30px;
       box-sizing: border-box;
       font-size: 0;
@@ -682,7 +682,7 @@ export default {
       }
 
       &::before {
-        background: $oreRed;
+        background: $mainColor;
         border-radius: 30px;
         content: '';
         height: 100%;
@@ -718,7 +718,7 @@ export default {
       }
 
       &Inner {
-        background: $oreRed;
+        background: $mainColor;
         color: transparent;
         font-size: 24px;
         box-decoration-break: clone;
@@ -753,7 +753,7 @@ export default {
         }
 
         &::before {
-          background: $oreRed;
+          background: $mainColor;
           bottom: 0;
           content: '';
           height: 1px;
@@ -770,7 +770,7 @@ export default {
       }
 
       &Inner {
-        background: $oreRed;
+        background: $mainColor;
         color: transparent;
         font-size: 14px;
         box-decoration-break: clone;
