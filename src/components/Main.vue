@@ -164,14 +164,14 @@ export default {
       &:nth-of-type(1) {
 
         &::after {
-          content: '#1';
+          content: '#p';
         }
       }
 
       &:nth-of-type(2) {
 
         &::after {
-          content: '#2';
+          content: '#c';
         }
       }
 
