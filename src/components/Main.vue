@@ -32,6 +32,17 @@
       </div>
       <div class="work__right" id="work">
         <article class="work__item">
+          <a class="work__itemAnchor" href="https://tekubi-hikaru.netlify.app/" target="_blank">
+            <div class="work__itemLeft" v-scroll="onScrollShow">
+              <p class="work__thumb"><img src="@/assets/img/work/thumb_03.jpg" alt="" height="1080" width="1920"></p>
+            </div>
+            <div class="work__itemRight" v-scroll="onScrollShow">
+              <p class="work__name"><span class="work__nameInner">TEKUBI HIKARU</span></p>
+              <p class="work__text"><span class="work__textInner">2022.07 / デザイン・コーディング</span></p>
+            </div>
+          </a>
+        </article>
+        <article class="work__item">
           <a class="work__itemAnchor" href="https://hub.vroid.com/characters/6370052186432543582/models/3982772858169024897" target="_blank">
             <div class="work__itemLeft" v-scroll="onScrollShow">
               <p class="work__thumb"><img src="@/assets/img/work/thumb_02.jpg" alt="" height="1080" width="1920"></p>
