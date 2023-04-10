@@ -16,6 +16,7 @@
           <ul class="about__lists" v-scroll="onScrollShow">
             <li class="about__list" v-scroll="onScrollShow"><a class="about__listAnchor" href="https://twitter.com/fxkxxshx" target="_blank"><span class="about__listInner">Twitter</span></a></li>
             <li class="about__list" v-scroll="onScrollShow"><a class="about__listAnchor" href="https://github.com/fxkxxshx" target="_blank"><span class="about__listInner">GitHub</span></a></li>
+            <li class="about__list" v-scroll="onScrollShow"><a class="about__listAnchor" href="https://note.com/fxkxxshx" target="_blank"><span class="about__listInner">note</span></a></li>
           </ul>
         </article>
         <article class="about__item">
