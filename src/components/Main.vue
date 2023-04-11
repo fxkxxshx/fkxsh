@@ -8,10 +8,11 @@
       </div>
       <div class="about__right" id="about">
         <article class="about__item">
-          <p class="about__name" v-scroll="onScrollShow"><span class="about__nameInner">ふかいし</span></p>
+          <p class="about__name" v-scroll="onScrollShow"><span class="about__nameInner">不可意思 / fkxsh</span></p>
+          <p class="about__text" v-scroll="onScrollShow"><span class="about__textInner">どちらも ふかいし と読みます。</span></p>
           <p class="about__text" v-scroll="onScrollShow"><span class="about__textInner">デザイナーとかフロントエンドエンジニアみたいなことをやっています。</span></p>
-          <p class="about__text" v-scroll="onScrollShow"><span class="about__textInner">今後「不快指数」というサークルで何かやるかもしれないし、やらないかもしれないです。</span></p>
-          <p class="about__text" v-scroll="onScrollShow"><span class="about__textInner">アニメ・漫画・酒・服・スニーカー・エンタメ系のかっこいいデザイン・青山吉能さん・赤城あんなさん・田中摩美々さんとかが好きです。</span></p>
+          <!-- <p class="about__text" v-scroll="onScrollShow"><span class="about__textInner">今後「不快指数」というサークルで何かやるかもしれないし、やらないかもしれないです。</span></p> -->
+          <p class="about__text" v-scroll="onScrollShow"><span class="about__textInner">アニメ・漫画・クラフトビール・服・スニーカー・卓球などが好きです。</span></p>
           <p class="about__text" v-scroll="onScrollShow"><span class="about__textInner">何かあればTwitterのDMに連絡ください。</span></p>
           <ul class="about__lists" v-scroll="onScrollShow">
             <li class="about__list" v-scroll="onScrollShow"><a class="about__listAnchor" href="https://twitter.com/fxkxxshx" target="_blank"><span class="about__listInner">Twitter</span></a></li>
@@ -19,10 +20,10 @@
             <li class="about__list" v-scroll="onScrollShow"><a class="about__listAnchor" href="https://note.com/fxkxxshx" target="_blank"><span class="about__listInner">note</span></a></li>
           </ul>
         </article>
-        <article class="about__item">
+        <!-- <article class="about__item">
           <p class="about__name" v-scroll="onScrollShow"><span class="about__nameInner">不快指数</span></p>
           <p class="about__text" v-scroll="onScrollShow"><span class="about__textInner">ふかいし主宰のサークルです。とりあえず名前だけ決まってます。何かできると良いですね。</span></p>
-        </article>
+        </article> -->
       </div>
     </section>
     <section class="work">
@@ -60,7 +61,7 @@
               <p class="work__thumb"><img src="@/assets/img/work/thumb_02.jpg" alt="" height="1080" width="1920"></p>
             </div>
             <div class="work__itemRight" v-scroll="onScrollShow">
-              <p class="work__name"><span class="work__nameInner">ふかいしのキャラクター</span></p>
+              <p class="work__name"><span class="work__nameInner">不可意思のキャラクター</span></p>
               <p class="work__text"><span class="work__textInner">2021.11 / VRoid Studio</span></p>
             </div>
           </a>
@@ -71,7 +72,7 @@
               <p class="work__thumb"><img src="@/assets/img/work/thumb_01.jpg" alt="" height="1080" width="1920"></p>
             </div>
             <div class="work__itemRight" v-scroll="onScrollShow">
-              <p class="work__name"><span class="work__nameInner">ふかいしのWebサイト</span></p>
+              <p class="work__name"><span class="work__nameInner">不可意思の個人サイト</span></p>
               <p class="work__text"><span class="work__textInner">2021.05 / デザイン・コーディング</span></p>
             </div>
           </a>
