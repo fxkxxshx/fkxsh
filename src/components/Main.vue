@@ -34,6 +34,17 @@
       </div>
       <div class="work__right" id="work">
         <article class="work__item">
+          <a class="work__itemAnchor" href="https://xn--ocke9cuax9kqe.com/" target="_blank">
+            <div class="work__itemLeft" v-scroll="onScrollShow">
+              <p class="work__thumb"><img src="@/assets/img/work/thumb_05.jpg" alt="" height="1080" width="1920"></p>
+            </div>
+            <div class="work__itemRight" v-scroll="onScrollShow">
+              <p class="work__name"><span class="work__nameInner">ネギャイベ2</span></p>
+              <p class="work__text"><span class="work__textInner">2023.04 / デザイン・コーディング</span></p>
+            </div>
+          </a>
+        </article>
+        <article class="work__item">
           <a class="work__itemAnchor" href="https://fkrk.fkxsh.com/" target="_blank">
             <div class="work__itemLeft" v-scroll="onScrollShow">
               <p class="work__thumb"><img src="@/assets/img/work/thumb_04.jpg" alt="" height="1080" width="1920"></p>
@@ -535,23 +546,29 @@ export default {
       &:nth-of-type(1) {
 
         &::after {
-          content: '04';
+          content: '05';
         }
       }
 
       &:nth-of-type(2) {
 
         &::after {
-          content: '03';
+          content: '04';
         }
       }
       &:nth-of-type(3) {
 
         &::after {
-          content: '02';
+          content: '03';
         }
       }
       &:nth-of-type(4) {
+
+        &::after {
+          content: '02';
+        }
+      }
+      &:nth-of-type(5) {
 
         &::after {
           content: '01';
