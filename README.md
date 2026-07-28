@@ -1,5 +1,9 @@
 # fkxsh
 
+## Requirements
+
+- Node.js 22
+
 ## Project setup
 ```
 npm install
