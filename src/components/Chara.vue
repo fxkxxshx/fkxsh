@@ -34,13 +34,22 @@ export default {
     this.idleBones = {};
     this.idlePose = {};
     this.groundLevel = null;
-    this.nextBlinkAt = 2 + Math.random() * 2;
+    this.contactShadow = null;
+    this.shadowGroundY = null;
+    this.shadowReferenceHipsY = null;
+    this.nextBlinkAt = 1.5 + Math.random() * 2;
     this.blinkStartedAt = null;
     this.initialize();
   },
   beforeDestroy () {
     cancelAnimationFrame(this.animationFrameId);
     window.removeEventListener('resize', this.onResize);
+    if (this.contactShadow) {
+      this.scene.remove(this.contactShadow);
+      this.contactShadow.geometry.dispose();
+      this.contactShadow.material.map.dispose();
+      this.contactShadow.material.dispose();
+    }
     this.renderer.dispose();
   },
   methods: {
@@ -131,7 +140,40 @@ export default {
       this.vrm = vrm;
       vrm.scene.updateMatrixWorld(true);
       this.groundLevel = this.getLowestFootPosition();
+      this.setupContactShadow(vrm);
       this.clock.start();
+    },
+    setupContactShadow (vrm) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 128;
+      canvas.height = 64;
+      const context = canvas.getContext('2d');
+      const gradient = context.createRadialGradient(64, 32, 2, 64, 32, 60);
+      gradient.addColorStop(0, 'rgba(35, 35, 35, 0.48)');
+      gradient.addColorStop(0.45, 'rgba(50, 50, 50, 0.24)');
+      gradient.addColorStop(1, 'rgba(70, 70, 70, 0)');
+      context.fillStyle = gradient;
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
+      const bounds = new THREE.Box3().setFromObject(vrm.scene);
+      const texture = new THREE.CanvasTexture(canvas);
+      const geometry = new THREE.PlaneGeometry(0.72, 0.28);
+      const material = new THREE.MeshBasicMaterial({
+        map: texture,
+        transparent: true,
+        opacity: 0.42,
+        depthWrite: false,
+        side: THREE.DoubleSide
+      });
+
+      this.contactShadow = new THREE.Mesh(geometry, material);
+      this.contactShadow.rotation.x = -Math.PI / 2 + 0.22;
+      this.contactShadow.renderOrder = -1;
+      this.shadowGroundY = bounds.min.y;
+      this.shadowReferenceHipsY = this.idleBones.hips
+        .getWorldPosition(new THREE.Vector3()).y;
+      this.scene.add(this.contactShadow);
+      this.updateContactShadow();
     },
     updateIdleAnimation (elapsed) {
       if (!this.vrm || !this.idleBones.hips) return;
@@ -143,6 +185,7 @@ export default {
       const look = Math.sin(elapsed * 0.29 + 1.7);
       const handMotion = (Math.sin(elapsed * 0.78 + 0.45) + 1) / 2;
       const legMotion = Math.sin(elapsed * 0.46 + 1.1);
+      const stanceShift = legMotion;
 
       const setRotation = (name, x, y, z) => {
         const bone = this.idleBones[name];
@@ -159,13 +202,13 @@ export default {
       const hips = this.idleBones.hips;
       const hipsPose = this.idlePose.hips;
       hips.position.set(
-        hipsPose.position.x + sway * 0.032,
+        hipsPose.position.x + sway * 0.006 + stanceShift * 0.018,
         hipsPose.position.y + breath * 0.012,
         hipsPose.position.z
       );
-      setRotation('hips', breath * 0.016, 0, weightShift * 0.05);
-      setRotation('spine', -breath * 0.016, sway * 0.012, -weightShift * 0.016);
-      setRotation('chest', -breath * 0.022, sway * 0.014, -weightShift * 0.014);
+      setRotation('hips', breath * 0.016, 0, weightShift * 0.008 + stanceShift * 0.02);
+      setRotation('spine', -breath * 0.016, sway * 0.012, -stanceShift * 0.003);
+      setRotation('chest', -breath * 0.022, sway * 0.014, -stanceShift * 0.002);
       setRotation('neck', breath * 0.008, look * 0.014, -weightShift * 0.008);
       setRotation('head', breath * 0.012, look * 0.022, -weightShift * 0.012);
       setRotation('leftShoulder', breath * 0.018, sway * 0.014, weightShift * 0.025);
@@ -180,12 +223,12 @@ export default {
       // Alternate the supporting leg, soften the knees, and counter-rotate the feet.
       const leftKneeBend = 0.06 + (legMotion + 1) * 0.12;
       const rightKneeBend = 0.06 + (1 - legMotion) * 0.12;
-      setRotation('leftUpperLeg', -leftKneeBend * 0.5, 0, -weightShift * 0.042);
-      setRotation('rightUpperLeg', -rightKneeBend * 0.5, 0, -weightShift * 0.042);
-      setRotation('leftLowerLeg', leftKneeBend, 0, 0);
-      setRotation('rightLowerLeg', rightKneeBend, 0, 0);
-      setRotation('leftFoot', -leftKneeBend * 0.58, 0, weightShift * 0.04);
-      setRotation('rightFoot', -rightKneeBend * 0.58, 0, weightShift * 0.04);
+      setRotation('leftUpperLeg', -leftKneeBend * 0.5, 0, -stanceShift * 0.025);
+      setRotation('rightUpperLeg', -rightKneeBend * 0.5, 0, -stanceShift * 0.025);
+      setRotation('leftLowerLeg', leftKneeBend, 0, stanceShift * 0.015);
+      setRotation('rightLowerLeg', rightKneeBend, 0, stanceShift * 0.015);
+      setRotation('leftFoot', -leftKneeBend * 0.58, 0, stanceShift * 0.022);
+      setRotation('rightFoot', -rightKneeBend * 0.58, 0, stanceShift * 0.022);
       setRotation('leftToes', leftKneeBend * 0.22, 0, 0);
       setRotation('rightToes', rightKneeBend * 0.22, 0, 0);
 
@@ -219,6 +262,7 @@ export default {
       });
 
       this.keepFeetGrounded();
+      this.updateContactShadow();
       this.updateBlink(elapsed);
     },
     getLowestFootPosition () {
@@ -238,6 +282,33 @@ export default {
         this.vrm.scene.position.y += this.groundLevel - lowestFoot;
       }
     },
+    updateContactShadow () {
+      if (!this.contactShadow || this.shadowGroundY === null) return;
+
+      this.vrm.scene.updateMatrixWorld(true);
+      const leftFoot = this.idleBones.leftFoot;
+      const rightFoot = this.idleBones.rightFoot;
+      if (!leftFoot || !rightFoot) return;
+
+      const leftPosition = leftFoot.getWorldPosition(new THREE.Vector3());
+      const rightPosition = rightFoot.getWorldPosition(new THREE.Vector3());
+      const hipsPosition = this.idleBones.hips.getWorldPosition(new THREE.Vector3());
+      const footDistance = Math.abs(leftPosition.x - rightPosition.x);
+      const verticalOffset = hipsPosition.y - this.shadowReferenceHipsY;
+      const heightFactor = THREE.MathUtils.clamp(verticalOffset / 0.08, -1, 1);
+      const heightScale = 1 - heightFactor * 0.1;
+      this.contactShadow.position.set(
+        (leftPosition.x + rightPosition.x) / 2,
+        this.shadowGroundY + 0.012,
+        (leftPosition.z + rightPosition.z) / 2 - 0.035
+      );
+      this.contactShadow.scale.set(
+        (0.9 + Math.min(footDistance, 0.4) * 0.5) * heightScale,
+        heightScale,
+        1
+      );
+      this.contactShadow.material.opacity = 0.42 - heightFactor * 0.07;
+    },
     updateBlink (elapsed) {
       const blendShape = this.vrm && this.vrm.blendShapeProxy;
       if (!blendShape) return;
@@ -252,7 +323,7 @@ export default {
         if (progress >= 1) {
           blendShape.setValue(VRMSchema.BlendShapePresetName.Blink, 0);
           this.blinkStartedAt = null;
-          this.nextBlinkAt = elapsed + 3 + Math.random() * 4;
+          this.nextBlinkAt = elapsed + 2.5 + Math.random() * 4;
         } else {
           blendShape.setValue(VRMSchema.BlendShapePresetName.Blink, Math.sin(progress * Math.PI));
         }
