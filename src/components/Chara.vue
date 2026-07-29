@@ -37,12 +37,17 @@ export default {
     this.contactShadow = null;
     this.shadowGroundY = null;
     this.shadowReferenceHipsY = null;
+    this.cameraPointer = new THREE.Vector2();
+    this.cameraBasePosition = new THREE.Vector3(0, 1, 6);
+    this.cameraTargetPosition = this.cameraBasePosition.clone();
     this.nextBlinkAt = 1.5 + Math.random() * 2;
     this.blinkStartedAt = null;
     this.initialize();
   },
   beforeDestroy () {
     cancelAnimationFrame(this.animationFrameId);
+    window.removeEventListener('mousemove', this.onMouseMove);
+    document.removeEventListener('mouseleave', this.onMouseLeave);
     window.removeEventListener('resize', this.onResize);
     if (this.contactShadow) {
       this.scene.remove(this.contactShadow);
@@ -83,6 +88,8 @@ export default {
         }
       );
 
+      window.addEventListener('mousemove', this.onMouseMove, { passive: true });
+      document.addEventListener('mouseleave', this.onMouseLeave);
       window.addEventListener('resize', this.onResize);
 
       this.onResize();
@@ -336,8 +343,29 @@ export default {
       this.updateIdleAnimation(this.clock.elapsedTime);
       if (this.vrm) this.vrm.update(delta);
 
+      this.updateCamera(delta);
       this.camera.lookAt(new THREE.Vector3(0, 0.85, 0));
       this.renderer.render(this.scene, this.camera );
+    },
+    updateCamera (delta) {
+      // Make the parallax noticeable without pushing the character out of frame.
+      this.cameraTargetPosition.set(
+        this.cameraBasePosition.x - this.cameraPointer.x * 1.4,
+        this.cameraBasePosition.y + this.cameraPointer.y * 0.8,
+        this.cameraBasePosition.z
+      );
+
+      const damping = 1 - Math.exp(-delta * 3.6);
+      this.camera.position.lerp(this.cameraTargetPosition, damping);
+    },
+    onMouseMove (event) {
+      this.cameraPointer.set(
+        THREE.MathUtils.clamp(event.clientX / window.innerWidth * 2 - 1, -1, 1),
+        THREE.MathUtils.clamp(event.clientY / window.innerHeight * 2 - 1, -1, 1)
+      );
+    },
+    onMouseLeave () {
+      this.cameraPointer.set(0, 0);
     },
     onResize () {
       this.renderer.setSize(window.innerWidth, window.innerHeight);
