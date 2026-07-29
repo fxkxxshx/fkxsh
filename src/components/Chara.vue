@@ -153,9 +153,9 @@ export default {
     setupContactShadow (vrm) {
       const canvas = document.createElement('canvas');
       canvas.width = 128;
-      canvas.height = 64;
+      canvas.height = 128;
       const context = canvas.getContext('2d');
-      const gradient = context.createRadialGradient(64, 32, 2, 64, 32, 60);
+      const gradient = context.createRadialGradient(64, 64, 2, 64, 64, 60);
       gradient.addColorStop(0, 'rgba(35, 35, 35, 0.48)');
       gradient.addColorStop(0.45, 'rgba(50, 50, 50, 0.24)');
       gradient.addColorStop(1, 'rgba(70, 70, 70, 0)');
@@ -164,7 +164,7 @@ export default {
 
       const bounds = new THREE.Box3().setFromObject(vrm.scene);
       const texture = new THREE.CanvasTexture(canvas);
-      const geometry = new THREE.PlaneGeometry(0.72, 0.28);
+      const geometry = new THREE.PlaneGeometry(0.66, 0.34);
       const material = new THREE.MeshBasicMaterial({
         map: texture,
         transparent: true,
