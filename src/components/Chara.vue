@@ -20,27 +20,28 @@ export default {
     const light = new THREE.DirectionalLight(0xffffff);
     // gltf and vrm
     const loader = new GLTFLoader();
-    // mouse
-    let mouseX = 0;
-    let mouseY = 0;
-    // window half
-    let windowHalfX = window.innerWidth / 2;
-    let windowHalfY = window.innerHeight / 2;
-
     return {
       renderer: renderer,
       camera: camera,
       scene: scene,
       light: light,
-      loader: loader,
-      mouseX: mouseX,
-      mouseY: mouseY,
-      windowHalfX: windowHalfX,
-      windowHalfY: windowHalfY,
+      loader: loader
     };
   },
   mounted () {
+    this.clock = new THREE.Clock();
+    this.vrm = null;
+    this.idleBones = {};
+    this.idlePose = {};
+    this.groundLevel = null;
+    this.nextBlinkAt = 2 + Math.random() * 2;
+    this.blinkStartedAt = null;
     this.initialize();
+  },
+  beforeDestroy () {
+    cancelAnimationFrame(this.animationFrameId);
+    window.removeEventListener('resize', this.onResize);
+    this.renderer.dispose();
   },
   methods: {
     initialize ()  {
@@ -68,51 +69,204 @@ export default {
               vrm.humanoid.getBoneNode(VRMSchema.HumanoidBoneName.RightUpperArm).rotation.z = -(Math.PI / 2 - 0.3);
               vrm.humanoid.getBoneNode(VRMSchema.HumanoidBoneName.LeftHand).rotation.z = 0.1;
               vrm.humanoid.getBoneNode(VRMSchema.HumanoidBoneName.RightHand).rotation.z = -0.1;
+              this.setupIdleAnimation(vrm);
           });
         }
       );
 
-      document.addEventListener('mousemove', this.onDocumentMouseMove);
-      document.addEventListener('touchstart', this.onTouch);
       window.addEventListener('resize', this.onResize);
-      window.addEventListener('deviceorientation', this.onGyro);
 
       this.onResize();
       this.animate();
     },
+    setupIdleAnimation (vrm) {
+      const boneNames = {
+        hips: VRMSchema.HumanoidBoneName.Hips,
+        spine: VRMSchema.HumanoidBoneName.Spine,
+        chest: VRMSchema.HumanoidBoneName.Chest,
+        neck: VRMSchema.HumanoidBoneName.Neck,
+        head: VRMSchema.HumanoidBoneName.Head,
+        leftShoulder: VRMSchema.HumanoidBoneName.LeftShoulder,
+        rightShoulder: VRMSchema.HumanoidBoneName.RightShoulder,
+        leftUpperArm: VRMSchema.HumanoidBoneName.LeftUpperArm,
+        rightUpperArm: VRMSchema.HumanoidBoneName.RightUpperArm,
+        leftLowerArm: VRMSchema.HumanoidBoneName.LeftLowerArm,
+        rightLowerArm: VRMSchema.HumanoidBoneName.RightLowerArm,
+        leftHand: VRMSchema.HumanoidBoneName.LeftHand,
+        rightHand: VRMSchema.HumanoidBoneName.RightHand,
+        leftUpperLeg: VRMSchema.HumanoidBoneName.LeftUpperLeg,
+        rightUpperLeg: VRMSchema.HumanoidBoneName.RightUpperLeg,
+        leftLowerLeg: VRMSchema.HumanoidBoneName.LeftLowerLeg,
+        rightLowerLeg: VRMSchema.HumanoidBoneName.RightLowerLeg,
+        leftFoot: VRMSchema.HumanoidBoneName.LeftFoot,
+        rightFoot: VRMSchema.HumanoidBoneName.RightFoot,
+        leftToes: VRMSchema.HumanoidBoneName.LeftToes,
+        rightToes: VRMSchema.HumanoidBoneName.RightToes
+      };
+
+      const sides = ['Left', 'Right'];
+      const fingers = ['Thumb', 'Index', 'Middle', 'Ring', 'Little'];
+      const joints = ['Proximal', 'Intermediate', 'Distal'];
+      sides.forEach((side) => {
+        fingers.forEach((finger) => {
+          joints.forEach((joint) => {
+            const schemaName = `${side}${finger}${joint}`;
+            const key = `${side.toLowerCase()}${finger}${joint}`;
+            boneNames[key] = VRMSchema.HumanoidBoneName[schemaName];
+          });
+        });
+      });
+
+      Object.keys(boneNames).forEach((key) => {
+        const bone = vrm.humanoid.getBoneNode(boneNames[key]);
+        if (bone) {
+          this.idleBones[key] = bone;
+          this.idlePose[key] = {
+            position: bone.position.clone(),
+            rotation: bone.rotation.clone()
+          };
+        }
+      });
+
+      this.vrm = vrm;
+      vrm.scene.updateMatrixWorld(true);
+      this.groundLevel = this.getLowestFootPosition();
+      this.clock.start();
+    },
+    updateIdleAnimation (elapsed) {
+      if (!this.vrm || !this.idleBones.hips) return;
+
+      // Several slightly different cycles keep the idle pose from looking mechanical.
+      const breath = Math.sin(elapsed * 1.45);
+      const sway = Math.sin(elapsed * 0.52);
+      const weightShift = Math.sin(elapsed * 0.37 + 0.8);
+      const look = Math.sin(elapsed * 0.29 + 1.7);
+      const handMotion = (Math.sin(elapsed * 0.78 + 0.45) + 1) / 2;
+      const legMotion = Math.sin(elapsed * 0.46 + 1.1);
+
+      const setRotation = (name, x, y, z) => {
+        const bone = this.idleBones[name];
+        const pose = this.idlePose[name];
+        if (bone && pose) {
+          bone.rotation.set(
+            pose.rotation.x + x,
+            pose.rotation.y + y,
+            pose.rotation.z + z
+          );
+        }
+      };
+
+      const hips = this.idleBones.hips;
+      const hipsPose = this.idlePose.hips;
+      hips.position.set(
+        hipsPose.position.x + sway * 0.032,
+        hipsPose.position.y + breath * 0.012,
+        hipsPose.position.z
+      );
+      setRotation('hips', breath * 0.016, 0, weightShift * 0.05);
+      setRotation('spine', -breath * 0.016, sway * 0.012, -weightShift * 0.016);
+      setRotation('chest', -breath * 0.022, sway * 0.014, -weightShift * 0.014);
+      setRotation('neck', breath * 0.008, look * 0.014, -weightShift * 0.008);
+      setRotation('head', breath * 0.012, look * 0.022, -weightShift * 0.012);
+      setRotation('leftShoulder', breath * 0.018, sway * 0.014, weightShift * 0.025);
+      setRotation('rightShoulder', -breath * 0.018, -sway * 0.014, weightShift * 0.025);
+      setRotation('leftUpperArm', breath * 0.05, weightShift * 0.026, breath * 0.038);
+      setRotation('rightUpperArm', -breath * 0.05, -weightShift * 0.026, -breath * 0.038);
+      setRotation('leftLowerArm', handMotion * 0.025, -0.07 - handMotion * 0.07, breath * 0.018);
+      setRotation('rightLowerArm', -handMotion * 0.025, 0.07 + handMotion * 0.07, -breath * 0.018);
+      setRotation('leftHand', breath * 0.035, handMotion * 0.045, handMotion * 0.075);
+      setRotation('rightHand', -breath * 0.035, -handMotion * 0.045, -handMotion * 0.075);
+
+      // Alternate the supporting leg, soften the knees, and counter-rotate the feet.
+      const leftKneeBend = 0.06 + (legMotion + 1) * 0.12;
+      const rightKneeBend = 0.06 + (1 - legMotion) * 0.12;
+      setRotation('leftUpperLeg', -leftKneeBend * 0.5, 0, -weightShift * 0.042);
+      setRotation('rightUpperLeg', -rightKneeBend * 0.5, 0, -weightShift * 0.042);
+      setRotation('leftLowerLeg', leftKneeBend, 0, 0);
+      setRotation('rightLowerLeg', rightKneeBend, 0, 0);
+      setRotation('leftFoot', -leftKneeBend * 0.58, 0, weightShift * 0.04);
+      setRotation('rightFoot', -rightKneeBend * 0.58, 0, weightShift * 0.04);
+      setRotation('leftToes', leftKneeBend * 0.22, 0, 0);
+      setRotation('rightToes', rightKneeBend * 0.22, 0, 0);
+
+      // Keep the fingers loosely curled and gently open and close each hand.
+      const fingerCurl = 0.18 + handMotion * 0.2;
+      const fingerOffsets = {
+        Index: 0,
+        Middle: 0.025,
+        Ring: 0.055,
+        Little: 0.085
+      };
+      const jointStrength = {
+        Proximal: 1,
+        Intermediate: 0.82,
+        Distal: 0.58
+      };
+
+      ['left', 'right'].forEach((side) => {
+        const direction = side === 'left' ? 1 : -1;
+        ['Index', 'Middle', 'Ring', 'Little'].forEach((finger) => {
+          ['Proximal', 'Intermediate', 'Distal'].forEach((joint) => {
+            const curl = (fingerCurl + fingerOffsets[finger]) * jointStrength[joint];
+            setRotation(`${side}${finger}${joint}`, 0, 0, direction * curl);
+          });
+        });
+
+        const thumbCurl = 0.1 + handMotion * 0.14;
+        setRotation(`${side}ThumbProximal`, 0, direction * thumbCurl * 0.45, direction * thumbCurl);
+        setRotation(`${side}ThumbIntermediate`, 0, 0, direction * thumbCurl * 0.85);
+        setRotation(`${side}ThumbDistal`, 0, 0, direction * thumbCurl * 0.55);
+      });
+
+      this.keepFeetGrounded();
+      this.updateBlink(elapsed);
+    },
+    getLowestFootPosition () {
+      const footPosition = new THREE.Vector3();
+      const heights = ['leftFoot', 'rightFoot']
+        .filter((name) => this.idleBones[name])
+        .map((name) => this.idleBones[name].getWorldPosition(footPosition.clone()).y);
+
+      return heights.length ? Math.min(...heights) : null;
+    },
+    keepFeetGrounded () {
+      if (this.groundLevel === null) return;
+
+      this.vrm.scene.updateMatrixWorld(true);
+      const lowestFoot = this.getLowestFootPosition();
+      if (lowestFoot !== null) {
+        this.vrm.scene.position.y += this.groundLevel - lowestFoot;
+      }
+    },
+    updateBlink (elapsed) {
+      const blendShape = this.vrm && this.vrm.blendShapeProxy;
+      if (!blendShape) return;
+
+      const blinkDuration = 0.16;
+      if (this.blinkStartedAt === null && elapsed >= this.nextBlinkAt) {
+        this.blinkStartedAt = elapsed;
+      }
+
+      if (this.blinkStartedAt !== null) {
+        const progress = (elapsed - this.blinkStartedAt) / blinkDuration;
+        if (progress >= 1) {
+          blendShape.setValue(VRMSchema.BlendShapePresetName.Blink, 0);
+          this.blinkStartedAt = null;
+          this.nextBlinkAt = elapsed + 3 + Math.random() * 4;
+        } else {
+          blendShape.setValue(VRMSchema.BlendShapePresetName.Blink, Math.sin(progress * Math.PI));
+        }
+      }
+    },
     animate () {
-      requestAnimationFrame(this.animate);
+      this.animationFrameId = requestAnimationFrame(this.animate);
 
-      this.camera.position.x += (this.mouseX - this.camera.position.x) * .00035;
-      this.camera.position.y += (- this.mouseY - this.camera.position.y) * .00035;
-
-      if (this.camera.position.x > 4.0) {
-        this.camera.position.x = 4.0;
-      }
-      if (this.camera.position.x < -4.0) { 
-        this.camera.position.x = -4.0;
-      }
-
-      if (this.camera.position.y > 4.7) {
-        this.camera.position.y = 4.7;
-      }
-      if (this.camera.position.y < -3.3) { 
-        this.camera.position.y = -3.3;
-      }
+      const delta = Math.min(this.clock.getDelta(), 0.1);
+      this.updateIdleAnimation(this.clock.elapsedTime);
+      if (this.vrm) this.vrm.update(delta);
 
       this.camera.lookAt(new THREE.Vector3(0, 0.85, 0));
       this.renderer.render(this.scene, this.camera );
-    }, 
-    onDocumentMouseMove (event) {
-      this.mouseX = -(event.clientX - this.windowHalfX) / 2;
-      this.mouseY = -(event.clientY - this.windowHalfY) / 2;
-    },
-    onTouch (event) {
-      if (event.targetTouches.length == 1) {
-        const touch = event.targetTouches[0];
-        this.mouseX = -(touch.pageX - this.windowHalfX) / 2;
-        this.mouseY = -(touch.pageY - this.windowHalfY) / 2;
-      }
     },
     onResize () {
       this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -120,10 +274,6 @@ export default {
       this.camera.aspect = window.innerWidth / window.innerHeight;
       this.camera.updateProjectionMatrix();
     },
-    onGyro (event) {
-      this.mouseX = (event.beta - this.windowHalfX) / 2;
-      this.mouseY = (event.gamma - this.windowHalfY) / 2;
-    }
   }
 }
 </script>
