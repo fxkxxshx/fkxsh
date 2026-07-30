@@ -3,7 +3,7 @@
     <section class="about" id="scrollTarget">
       <div class="about__left">
         <h2 class="about__title">
-          <img src="@/assets/img/about/title.svg" alt="about" height="47.058" width="320.43">
+          <span class="about__titleText">about</span>
         </h2>
       </div>
       <div class="about__right" id="about">
@@ -30,7 +30,7 @@
     <section class="work">
       <div class="work__left">
         <h2 class="work__title">
-          <img src="@/assets/img/work/title.svg" alt="work" height="52.049" width="320.324">
+          <span class="work__titleText">works</span>
         </h2>
       </div>
       <div class="work__right" id="work">
@@ -156,18 +156,28 @@ export default {
     }
 
     &__title {
+      aspect-ratio: 320.43 / 47.058;
+      color: $mainColor;
+      container-type: inline-size;
       margin: 0;
       font-size: 0;
+      line-height: 1;
+      overflow: hidden;
       width: 100%;
       @include tb {
         position: sticky;
         top: 45vh;
       }
+    }
 
-      img {
-        height: auto;
-        width: 100%;
-      }
+    &__titleText {
+      display: inline-block;
+      font-size: calc(100cqw * 66 / 320.43);
+      transform: scaleX(0.9712);
+      transform-origin: left top;
+      white-space: nowrap;
+      @include rg-ew;
+      line-height: calc(47.058 / 66);
     }
 
     &__right {
@@ -503,18 +513,28 @@ export default {
     }
 
     &__title {
+      aspect-ratio: 320.324 / 52.049;
+      color: $mainColor;
+      container-type: inline-size;
       margin: 0;
       font-size: 0;
+      line-height: 1;
+      overflow: hidden;
       width: 100%;
       @include tb {
         position: sticky;
         top: 45vh;
       }
+    }
 
-      img {
-        height: auto;
-        width: 100%;
-      }
+    &__titleText {
+      display: inline-block;
+      font-size: calc(100cqw * 73 / 320.324);
+      transform: scaleX(0.8168);
+      transform-origin: left top;
+      white-space: nowrap;
+      @include rg-ew;
+      line-height: calc(52.049 / 73);
     }
 
     &__right {

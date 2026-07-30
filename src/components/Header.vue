@@ -53,7 +53,7 @@ export default {
     return {
       lists: [
         ['about', '(a)', '#about'],
-        ['work', '(w)', '#work']
+        ['works', '(w)', '#work']
       ]
     };
   },
