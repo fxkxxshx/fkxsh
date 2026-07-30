@@ -91,13 +91,29 @@
         </article>
       </div>
     </section>
-    <p class="qr"><img src="@/assets/img/qr/qr.svg" alt="" height="50px" width="50px"></p>
+    <p class="qr">
+      <span
+        class="qr__image"
+        :style="{
+          maskImage: `url(${qrUrl})`,
+          WebkitMaskImage: `url(${qrUrl})`
+        }"
+        aria-hidden="true"
+      ></span>
+    </p>
   </main>
 </template>
 
 <script>
+import qrUrl from '@/assets/img/qr/qr.svg';
+
 export default {
   name: 'Main',
+  data () {
+    return {
+      qrUrl
+    };
+  },
   directives: {
     scroll: {
       inserted (el, binding) {
@@ -458,7 +474,7 @@ export default {
             }
 
             .about__listInner {
-              background: #000;
+              background: $inkColor;
             }
           }
         }
@@ -650,7 +666,7 @@ export default {
             .work__itemLeft{
 
               .work__thumb {
-                border: 1px solid #000;
+                border: 1px solid $inkColor;
                 // overflow: hidden;
                 transform: translate(5px, 5px);
 
@@ -662,7 +678,7 @@ export default {
             }
 
             .work__nameInner {
-              background: #000;
+              background: $inkColor;
             }
 
             .work__text {
@@ -670,13 +686,13 @@ export default {
               &:last-of-type {
 
                 &::before {
-                  background: #000;
+                  background: $inkColor;
                 }
               }
             }
 
             .work__textInner {
-              background: #000;
+              background: $inkColor;
             }
           }
         }
@@ -869,9 +885,18 @@ export default {
       width: 50px;
     }
 
-    img {
-      height: auto;
+    &__image {
+      background: $mainColor;
+      display: block;
+      height: 45px;
+      mask-position: center;
+      mask-repeat: no-repeat;
+      mask-size: contain;
+      transition: background 0.3s ease-out;
       width: 100%;
+      @include tb {
+        height: 50px;
+      }
     }
   }
 }

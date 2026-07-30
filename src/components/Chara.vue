@@ -40,6 +40,8 @@ export default {
     this.cameraPointer = new THREE.Vector2();
     this.cameraBasePosition = new THREE.Vector3(0, 1, 6);
     this.cameraTargetPosition = this.cameraBasePosition.clone();
+    this.onThemeChange = this.updateTheme.bind(this);
+    window.addEventListener('themechange', this.onThemeChange);
     this.nextBlinkAt = 1.5 + Math.random() * 2;
     this.blinkStartedAt = null;
     this.initialize();
@@ -51,6 +53,7 @@ export default {
     window.removeEventListener('touchmove', this.onTouch);
     document.removeEventListener('mouseleave', this.onMouseLeave);
     window.removeEventListener('resize', this.onResize);
+    window.removeEventListener('themechange', this.onThemeChange);
     if (this.contactShadow) {
       this.scene.remove(this.contactShadow);
       this.contactShadow.geometry.dispose();
@@ -64,7 +67,7 @@ export default {
       // renderer
       this.renderer.setSize(window.innerWidth, window.innerHeight);
       this.renderer.setPixelRatio(window.devicePixelRatio);
-      this.renderer.setClearColor(0xF5F5F5, 1);
+      this.updateTheme();
       this.$refs.chara.appendChild(this.renderer.domElement);
       // camera
       this.camera.position.x = 0.0;
@@ -385,6 +388,12 @@ export default {
       this.renderer.setPixelRatio(window.devicePixelRatio);
       this.camera.aspect = window.innerWidth / window.innerHeight;
       this.camera.updateProjectionMatrix();
+    },
+    updateTheme () {
+      const surface = getComputedStyle(document.documentElement)
+        .getPropertyValue('--color-surface')
+        .trim() || '#f5f5f5';
+      this.renderer.setClearColor(surface, 1);
     },
   }
 }

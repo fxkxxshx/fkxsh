@@ -5,6 +5,7 @@
     <Main/>
     <Footer/>
     <Loading/>
+    <ThemeEditor/>
   </div>
 </template>
 
@@ -14,6 +15,7 @@ import Header from './components/Header.vue';
 import Main from './components/Main.vue';
 import Footer from './components/Footer.vue';
 import Loading from './components/Loading.vue';
+import ThemeEditor from './components/ThemeEditor.vue';
 
 export default {
   name: 'App',
@@ -22,7 +24,8 @@ export default {
     Header,
     Main,
     Footer,
-    Loading
+    Loading,
+    ThemeEditor
   },
   mounted () {
     window.addEventListener('DOMContentLoaded', this.onHeight);
@@ -40,6 +43,12 @@ export default {
 <style lang="scss">
 @import "@/assets/scss/var.scss";
 @import "@/assets/scss/mixin.scss";
+
+:root {
+  --color-primary: #0000ff;
+  --color-surface: #f5f5f5;
+  --color-ink: #000000;
+}
 
 #app {
   height: 100vh;

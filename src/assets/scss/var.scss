@@ -1,5 +1,6 @@
 @charset "utf-8";
 
 // colors
-$mainColor: #0000ff;
-$subColor: #F5F5F5;
+$mainColor: var(--color-primary);
+$subColor: var(--color-surface);
+$inkColor: var(--color-ink);
