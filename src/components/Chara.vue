@@ -47,6 +47,8 @@ export default {
   beforeDestroy () {
     cancelAnimationFrame(this.animationFrameId);
     window.removeEventListener('mousemove', this.onMouseMove);
+    window.removeEventListener('touchstart', this.onTouch);
+    window.removeEventListener('touchmove', this.onTouch);
     document.removeEventListener('mouseleave', this.onMouseLeave);
     window.removeEventListener('resize', this.onResize);
     if (this.contactShadow) {
@@ -89,6 +91,8 @@ export default {
       );
 
       window.addEventListener('mousemove', this.onMouseMove, { passive: true });
+      window.addEventListener('touchstart', this.onTouch, { passive: true });
+      window.addEventListener('touchmove', this.onTouch, { passive: true });
       document.addEventListener('mouseleave', this.onMouseLeave);
       window.addEventListener('resize', this.onResize);
 
@@ -359,9 +363,18 @@ export default {
       this.camera.position.lerp(this.cameraTargetPosition, damping);
     },
     onMouseMove (event) {
+      this.setCameraPointer(event.clientX, event.clientY);
+    },
+    onTouch (event) {
+      const touch = event.touches[0];
+      if (!touch) return;
+
+      this.setCameraPointer(touch.clientX, touch.clientY);
+    },
+    setCameraPointer (clientX, clientY) {
       this.cameraPointer.set(
-        THREE.MathUtils.clamp(event.clientX / window.innerWidth * 2 - 1, -1, 1),
-        THREE.MathUtils.clamp(event.clientY / window.innerHeight * 2 - 1, -1, 1)
+        THREE.MathUtils.clamp(clientX / window.innerWidth * 2 - 1, -1, 1),
+        THREE.MathUtils.clamp(clientY / window.innerHeight * 2 - 1, -1, 1)
       );
     },
     onMouseLeave () {
