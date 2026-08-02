@@ -1,6 +1,6 @@
 <template>
   <footer class="footer">
-    <p class="footer__copy">&copy; 2021 fkxsh</p>
+    <p class="footer__copy">&copy; 2026 fkxsh</p>
   </footer>
 </template>
 

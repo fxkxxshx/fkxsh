@@ -10,9 +10,8 @@
         <article class="about__item">
           <p class="about__name" v-scroll="onScrollShow"><span class="about__nameInner">不可意思 / fkxsh</span></p>
           <p class="about__text" v-scroll="onScrollShow"><span class="about__textInner">どちらも ふかいし と読みます。</span></p>
-          <p class="about__text" v-scroll="onScrollShow"><span class="about__textInner">デザイナーとかフロントエンドエンジニアみたいなことをやっています。</span></p>
-          <!-- <p class="about__text" v-scroll="onScrollShow"><span class="about__textInner">今後「不快指数」というサークルで何かやるかもしれないし、やらないかもしれないです。</span></p> -->
-          <p class="about__text" v-scroll="onScrollShow"><span class="about__textInner">アニメ・漫画・クラフトビール・服・スニーカー・卓球などが好きです。</span></p>
+          <p class="about__text" v-scroll="onScrollShow"><span class="about__textInner">本業はWebエンジニアをやっていて趣味でデザインも少しやります。</span></p>
+          <p class="about__text" v-scroll="onScrollShow"><span class="about__textInner">アニメ・漫画・酒・服・サウナ・アーセナルなどが好きです。</span></p>
           <p class="about__text" v-scroll="onScrollShow"><span class="about__textInner">何かあればTwitterのDMに連絡ください。</span></p>
           <ul class="about__lists" v-scroll="onScrollShow">
             <li class="about__list" v-scroll="onScrollShow"><a class="about__listAnchor" href="https://twitter.com/fxkxxshx" target="_blank"><span class="about__listInner">Twitter</span></a></li>
@@ -21,10 +20,11 @@
             <li class="about__list" v-scroll="onScrollShow"><a class="about__listAnchor" href="https://note.com/fxkxxshx" target="_blank"><span class="about__listInner">note</span></a></li>
           </ul>
         </article>
-        <!-- <article class="about__item">
-          <p class="about__name" v-scroll="onScrollShow"><span class="about__nameInner">不快指数</span></p>
-          <p class="about__text" v-scroll="onScrollShow"><span class="about__textInner">ふかいし主宰のサークルです。とりあえず名前だけ決まってます。何かできると良いですね。</span></p>
-        </article> -->
+        <article class="about__item">
+          <p class="about__name" v-scroll="onScrollShow"><span class="about__nameInner">FKXSHNUM</span></p>
+          <p class="about__text" v-scroll="onScrollShow"><span class="about__textInner">同人イベント（同人誌即売会）にはこのサークル名で参加しています。</span></p>
+          <p class="about__text" v-scroll="onScrollShow"><span class="about__textInner">直近はGSF03にて<a class="about__textAnchor" href="https://x.com/fxkxxshx/status/2070485375173472582" target="_blank"><span class="about__textAnchorInner">篠澤広モチーフのTシャツ</span></a>を頒布しました。</span></p>
+        </article>
       </div>
     </section>
     <section class="work">
@@ -34,43 +34,16 @@
         </h2>
       </div>
       <div class="work__right" id="work">
-        <article class="work__item">
-          <a class="work__itemAnchor" href="https://xn--ocke9cuax9kqe.com/" target="_blank">
+        <article
+          v-for="(workItem, index) in works"
+          :key="workItem.href"
+          class="work__item"
+          :data-number="formatWorkNumber(index)"
+        >
+          <a class="work__itemAnchor" :href="workItem.href" target="_blank">
             <div class="work__itemRight" v-scroll="onScrollShow">
-              <p class="work__name"><span class="work__nameInner">ネギャイベ2</span></p>
-              <p class="work__text"><span class="work__textInner">2023.04 / デザイン・コーディング</span></p>
-            </div>
-          </a>
-        </article>
-        <article class="work__item">
-          <a class="work__itemAnchor" href="https://fkrk.fkxsh.com/" target="_blank">
-            <div class="work__itemRight" v-scroll="onScrollShow">
-              <p class="work__name"><span class="work__nameInner">FKRK</span></p>
-              <p class="work__text"><span class="work__textInner">2023.04 / デザイン・コーディング</span></p>
-            </div>
-          </a>
-        </article>
-        <article class="work__item">
-          <a class="work__itemAnchor" href="https://tekubi-hikaru.netlify.app/" target="_blank">
-            <div class="work__itemRight" v-scroll="onScrollShow">
-              <p class="work__name"><span class="work__nameInner">TEKUBI HIKARU</span></p>
-              <p class="work__text"><span class="work__textInner">2022.07 / デザイン・コーディング</span></p>
-            </div>
-          </a>
-        </article>
-        <article class="work__item">
-          <a class="work__itemAnchor" href="https://hub.vroid.com/characters/6370052186432543582/models/3982772858169024897" target="_blank">
-            <div class="work__itemRight" v-scroll="onScrollShow">
-              <p class="work__name"><span class="work__nameInner">不可意思のキャラクター</span></p>
-              <p class="work__text"><span class="work__textInner">2021.11 / VRoid Studio</span></p>
-            </div>
-          </a>
-        </article>
-        <article class="work__item">
-          <a class="work__itemAnchor" href="https://fkxsh.com" target="_blank">
-            <div class="work__itemRight" v-scroll="onScrollShow">
-              <p class="work__name"><span class="work__nameInner">不可意思の個人サイト</span></p>
-              <p class="work__text"><span class="work__textInner">2021.05 / デザイン・コーディング</span></p>
+              <p class="work__name"><span class="work__nameInner">{{ workItem.name }}</span></p>
+              <p class="work__text"><span class="work__textInner">{{ workItem.description }}</span></p>
             </div>
           </a>
         </article>
@@ -96,7 +69,29 @@ export default {
   name: 'Main',
   data () {
     return {
-      qrUrl
+      qrUrl,
+      works: [
+        {
+          name: 'TSUKIHI',
+          description: '2024.02 / 自分が撮影した写真を掲載するWebサイト',
+          href: 'https://tsukihi.fkxsh.com/'
+        },
+        {
+          name: 'ネギャイベ2',
+          description: '2023.04 / クラブイベントの告知Webサイト（現在は閉鎖中）',
+          href: 'https://xn--ocke9cuax9kqe.com/'
+        },
+        {
+          name: 'FKRK',
+          description: '2023.04 / 自分が体験したモノやコトを記録するWebサイト',
+          href: 'https://fkrk.fkxsh.com/'
+        },
+        {
+          name: 'TEKUBI HIKARU',
+          description: '2022.07 / Apple Watchをペンライトとして使用できるようにするWebアプリケーション',
+          href: 'https://tekubi-hikaru.netlify.app/'
+        },
+      ]
     };
   },
   directives: {
@@ -113,6 +108,9 @@ export default {
     }
   },
   methods: {
+    formatWorkNumber (index) {
+      return String(this.works.length - index).padStart(2, '0');
+    },
     onScrollShow (evt, el) {
       const top = el.getBoundingClientRect().top;
       if (window.scrollY > top - window.innerHeight * 0.75) {
@@ -343,6 +341,14 @@ export default {
         .about__textInner {
           color: $subColor;
         }
+
+        .about__textAnchor {
+          color: $subColor;
+
+          &::before {
+            opacity: 1;
+          }
+        }
       }
 
       &:last-of-type {
@@ -444,55 +450,66 @@ export default {
           margin: 0 0 0 18px;
         }
       }
+    }
 
-      &Anchor {
-        color: transparent;
-        position: relative;
-        text-decoration: none;
-        transition: color 0.4s ease-out 0.3s;
+    &__listAnchor,
+    &__textAnchor {
+      color: transparent;
+      position: relative;
+      text-decoration: none;
+      transition: color 0.4s ease-out 0.3s;
 
-        &:hover {
-          @include tb {
+      &:hover {
+        @include tb {
 
-            &::before {
-              background: transparent;
-            }
+          &::before {
+            background: transparent;
+          }
 
-            .about__listInner {
-              background: $inkColor;
-            }
+          .about__listInner,
+          .about__textAnchorInner {
+            background: $inkColor;
           }
         }
-
-        &::before {
-          background: $subColor;
-          bottom: -1px;
-          content: '';
-          height: 1px;
-          left: 0;
-          margin: 0 auto;
-          opacity: 0;
-          position: absolute;
-          right: 0;
-          transition: opacity 0.4s ease-out 0.3s, background 0.2s ease-out;
-          width: calc(100% - 12px);
-        }
       }
 
-      &Inner {
-        background: $mainColor;
-        font-size: 14px;
-        box-decoration-break: clone;
-        display: inline;
-        line-height: 2;
-        padding: 4px 6px;
-        transition: background 0.3s ease-out;
-        @include ns_m;
-        @include tb {
-          font-size: 16px;
-        }   
+      &::before {
+        background: $subColor;
+        bottom: -1px;
+        content: '';
+        height: 1px;
+        left: 0;
+        margin: 0 auto;
+        opacity: 0;
+        position: absolute;
+        right: 0;
+        transition: opacity 0.4s ease-out 0.3s, background 0.2s ease-out;
+        width: calc(100% - 12px);
       }
     }
+
+    &__textAnchor {
+
+      &::before {
+          bottom: 1px;
+      }
+    }
+
+    &__listInner,
+    &__textAnchorInner {
+      background: $mainColor;
+      font-size: 14px;
+      box-decoration-break: clone;
+      display: inline;
+      line-height: 2;
+      padding: 4px 6px;
+      transition: background 0.3s ease-out;
+      @include ns_m;
+      @include tb {
+        font-size: 16px;
+      }
+    }
+
   }
 
   .work {
@@ -565,38 +582,6 @@ export default {
     &__item {
       position: relative;
 
-      &:nth-of-type(1) {
-
-        &::after {
-          content: '05';
-        }
-      }
-
-      &:nth-of-type(2) {
-
-        &::after {
-          content: '04';
-        }
-      }
-      &:nth-of-type(3) {
-
-        &::after {
-          content: '03';
-        }
-      }
-      &:nth-of-type(4) {
-
-        &::after {
-          content: '02';
-        }
-      }
-      &:nth-of-type(5) {
-
-        &::after {
-          content: '01';
-        }
-      }
-
       &::before {
         background: $subColor;
         border: 3px solid $mainColor;
@@ -617,7 +602,7 @@ export default {
 
       &::after {
         color: $mainColor;
-        content: '#1';
+        content: attr(data-number);
         font-size: 10px;
         left: -42px;
         line-height: 1;
@@ -640,6 +625,7 @@ export default {
 
       &Anchor {
         color: $subColor;
+        display: inline-block;
         text-decoration: none;
 
         &:hover {
@@ -733,7 +719,7 @@ export default {
       }
 
       &:last-of-type {
-        margin: 0;
+        margin: -0.5px 0 0;
         padding: 0 0 16px;
         position: relative;
         @include tb {
