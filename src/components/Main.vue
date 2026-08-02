@@ -36,9 +36,6 @@
       <div class="work__right" id="work">
         <article class="work__item">
           <a class="work__itemAnchor" href="https://xn--ocke9cuax9kqe.com/" target="_blank">
-            <div class="work__itemLeft" v-scroll="onScrollShow">
-              <p class="work__thumb"><img src="@/assets/img/work/thumb_05.jpg" alt="" height="1080" width="1920"></p>
-            </div>
             <div class="work__itemRight" v-scroll="onScrollShow">
               <p class="work__name"><span class="work__nameInner">ネギャイベ2</span></p>
               <p class="work__text"><span class="work__textInner">2023.04 / デザイン・コーディング</span></p>
@@ -47,9 +44,6 @@
         </article>
         <article class="work__item">
           <a class="work__itemAnchor" href="https://fkrk.fkxsh.com/" target="_blank">
-            <div class="work__itemLeft" v-scroll="onScrollShow">
-              <p class="work__thumb"><img src="@/assets/img/work/thumb_04.jpg" alt="" height="1080" width="1920"></p>
-            </div>
             <div class="work__itemRight" v-scroll="onScrollShow">
               <p class="work__name"><span class="work__nameInner">FKRK</span></p>
               <p class="work__text"><span class="work__textInner">2023.04 / デザイン・コーディング</span></p>
@@ -58,9 +52,6 @@
         </article>
         <article class="work__item">
           <a class="work__itemAnchor" href="https://tekubi-hikaru.netlify.app/" target="_blank">
-            <div class="work__itemLeft" v-scroll="onScrollShow">
-              <p class="work__thumb"><img src="@/assets/img/work/thumb_03.jpg" alt="" height="1080" width="1920"></p>
-            </div>
             <div class="work__itemRight" v-scroll="onScrollShow">
               <p class="work__name"><span class="work__nameInner">TEKUBI HIKARU</span></p>
               <p class="work__text"><span class="work__textInner">2022.07 / デザイン・コーディング</span></p>
@@ -69,9 +60,6 @@
         </article>
         <article class="work__item">
           <a class="work__itemAnchor" href="https://hub.vroid.com/characters/6370052186432543582/models/3982772858169024897" target="_blank">
-            <div class="work__itemLeft" v-scroll="onScrollShow">
-              <p class="work__thumb"><img src="@/assets/img/work/thumb_02.jpg" alt="" height="1080" width="1920"></p>
-            </div>
             <div class="work__itemRight" v-scroll="onScrollShow">
               <p class="work__name"><span class="work__nameInner">不可意思のキャラクター</span></p>
               <p class="work__text"><span class="work__textInner">2021.11 / VRoid Studio</span></p>
@@ -80,9 +68,6 @@
         </article>
         <article class="work__item">
           <a class="work__itemAnchor" href="https://fkxsh.com" target="_blank">
-            <div class="work__itemLeft" v-scroll="onScrollShow">
-              <p class="work__thumb"><img src="@/assets/img/work/thumb_01.jpg" alt="" height="1080" width="1920"></p>
-            </div>
             <div class="work__itemRight" v-scroll="onScrollShow">
               <p class="work__name"><span class="work__nameInner">不可意思の個人サイト</span></p>
               <p class="work__text"><span class="work__textInner">2021.05 / デザイン・コーディング</span></p>
@@ -656,27 +641,9 @@ export default {
       &Anchor {
         color: $subColor;
         text-decoration: none;
-        @include pc {
-          display: flex;
-          padding: 0 0 5px;
-        }
 
         &:hover {
           @include tb {
-            .work__itemLeft{
-
-              .work__thumb {
-                border: 1px solid $inkColor;
-                // overflow: hidden;
-                transform: translate(5px, 5px);
-
-                &::before {
-                  // background: transparent;
-                  transform: translate(-5px, -5px);
-                }
-              }
-            }
-
             .work__nameInner {
               background: $inkColor;
             }
@@ -698,36 +665,8 @@ export default {
         }
       }
 
-      &Left {
-        @include pc {
-          width: 50%;
-        }
-
-        &.is-show {
-
-          .work__thumb {
-            
-            &::before {
-              transform: translate(0, 0);
-            }
-          }
-        }
-      }
-
       &Right {
-        margin: 19px 0 0;
         transform-origin: left top;
-        @include tb {
-          margin: 23px 0 0;
-        }
-        @include pc {
-          box-sizing: border-box;
-          display: flex;
-          flex-direction: column;
-          margin: 0 0 -5px;
-          padding: 0 0 0 23px;
-          width: 50%;
-        }
 
         &.is-show {
 
@@ -754,47 +693,6 @@ export default {
             color: $subColor;
           }
         }
-      }
-    }
-
-    &__thumb {
-      border: 1px solid $mainColor;
-      border-radius: 30px;
-      box-sizing: border-box;
-      font-size: 0;
-      margin: 0;
-      position: relative;
-      transition: border 0.3s ease-out, transform 0.3s ease-out;
-      width: calc(100% - 4px);
-      z-index: 1;
-      @include tb {
-        width: calc(100% - 5px);
-      }
-
-      &::before {
-        background: $mainColor;
-        border-radius: 30px;
-        content: '';
-        height: 100%;
-        left: 4px;
-        position: absolute;
-        top: 4px;
-        transform: translate(-4px, -4px);
-        transition: transform 0.3s ease-out;
-        width: 100%;
-        @include tb {
-          left: 5px;
-          top: 5px;
-          transform: translate(-5px, -5px);
-        }
-      }
-
-      img {
-        border-radius: 30px;
-        height: auto;
-        position: relative;
-        width: 100%;
-        z-index: 1;
       }
     }
 
