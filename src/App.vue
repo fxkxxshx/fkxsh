@@ -50,6 +50,10 @@ export default {
   --color-ink: #000000;
 }
 
+html {
+  background-color: var(--color-surface);
+}
+
 #app {
   height: 100vh;
   overflow-y: scroll;
