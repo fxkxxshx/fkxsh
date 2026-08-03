@@ -151,6 +151,40 @@ export default {
       this.colors = { ...DEFAULT_COLORS };
       this.applyTheme();
     },
+    async writeClipboardText (text) {
+      let clipboardError;
+
+      if (navigator.clipboard && window.isSecureContext) {
+        try {
+          await navigator.clipboard.writeText(text);
+          return;
+        } catch (error) {
+          clipboardError = error;
+        }
+      }
+
+      const textarea = document.createElement('textarea');
+      const activeElement = document.activeElement;
+      textarea.value = text;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      textarea.style.pointerEvents = 'none';
+      document.body.appendChild(textarea);
+
+      try {
+        textarea.select();
+        textarea.setSelectionRange(0, textarea.value.length);
+        if (!document.execCommand('copy')) {
+          throw clipboardError || new Error('Clipboard copy command was rejected');
+        }
+      } finally {
+        textarea.remove();
+        if (activeElement && typeof activeElement.focus === 'function') {
+          activeElement.focus();
+        }
+      }
+    },
     async copyTheme () {
       const css = `:root {
   --color-primary: ${this.colors.primary};
@@ -158,9 +192,11 @@ export default {
   --color-ink: ${this.colors.ink};
 }`;
       try {
-        await navigator.clipboard.writeText(css);
+        await this.writeClipboardText(css);
         this.copyLabel = 'コピーしました';
       } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to copy theme CSS variables:', error);
         this.copyLabel = 'コピーできませんでした';
       }
       window.setTimeout(() => {
