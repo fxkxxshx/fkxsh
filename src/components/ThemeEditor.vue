@@ -78,8 +78,8 @@
 
 <script>
 const DEFAULT_COLORS = {
-  primary: '#0000ff',
-  surface: '#f5f5f5',
+  primary: '#e00004',
+  surface: '#f2f2f2',
   ink: '#000000'
 };
 const STORAGE_KEY = 'fkxsh-theme-editor';

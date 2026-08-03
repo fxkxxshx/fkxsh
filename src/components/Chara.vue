@@ -392,7 +392,7 @@ export default {
     updateTheme () {
       const surface = getComputedStyle(document.documentElement)
         .getPropertyValue('--color-surface')
-        .trim() || '#f5f5f5';
+        .trim() || '#f2f2f2';
       this.renderer.setClearColor(surface, 1);
     },
   }

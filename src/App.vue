@@ -45,8 +45,8 @@ export default {
 @import "@/assets/scss/mixin.scss";
 
 :root {
-  --color-primary: #0000ff;
-  --color-surface: #f5f5f5;
+  --color-primary: #e00004;
+  --color-surface: #f2f2f2;
   --color-ink: #000000;
 }
 
