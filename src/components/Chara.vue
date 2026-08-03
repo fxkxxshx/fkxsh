@@ -40,6 +40,13 @@ export default {
     this.cameraPointer = new THREE.Vector2();
     this.cameraBasePosition = new THREE.Vector3(0, 1, 6);
     this.cameraTargetPosition = this.cameraBasePosition.clone();
+    this.cameraLookAtTarget = new THREE.Vector3(0, 0.85, 0);
+    this.gazeNdcPosition = new THREE.Vector3();
+    this.gazeDirection = new THREE.Vector3();
+    this.gazeTargetPosition = new THREE.Vector3();
+    this.gazeDesiredPosition = new THREE.Vector3();
+    this.gazeInitialized = false;
+    this.hasGazeInput = false;
     this.onThemeChange = this.updateTheme.bind(this);
     window.addEventListener('themechange', this.onThemeChange);
     this.nextBlinkAt = 1.5 + Math.random() * 2;
@@ -152,6 +159,10 @@ export default {
       });
 
       this.vrm = vrm;
+      if (vrm.lookAt) {
+        // We update the target manually so the eyes ease toward the pointer.
+        vrm.lookAt.autoUpdate = false;
+      }
       vrm.scene.updateMatrixWorld(true);
       this.groundLevel = this.getLowestFootPosition();
       this.setupContactShadow(vrm);
@@ -348,10 +359,12 @@ export default {
 
       const delta = Math.min(this.clock.getDelta(), 0.1);
       this.updateIdleAnimation(this.clock.elapsedTime);
+      this.updateCamera(delta);
+      this.camera.lookAt(this.cameraLookAtTarget);
+      this.camera.updateMatrixWorld();
+      this.updateLookAt(delta);
       if (this.vrm) this.vrm.update(delta);
 
-      this.updateCamera(delta);
-      this.camera.lookAt(new THREE.Vector3(0, 0.85, 0));
       this.renderer.render(this.scene, this.camera );
     },
     updateCamera (delta) {
@@ -365,6 +378,36 @@ export default {
       const damping = 1 - Math.exp(-delta * 3.6);
       this.camera.position.lerp(this.cameraTargetPosition, damping);
     },
+    updateLookAt (delta) {
+      if (!this.vrm || !this.vrm.lookAt || !this.hasGazeInput) return;
+
+      // Turn the screen position into a point on a ray extending from the camera.
+      // Limiting the input keeps the eyes from reaching an unnatural extreme.
+      this.gazeNdcPosition.set(
+        THREE.MathUtils.clamp(this.cameraPointer.x, -0.48, 0.48),
+        -THREE.MathUtils.clamp(this.cameraPointer.y, -0.4, 0.4),
+        0.5
+      );
+      this.gazeNdcPosition.unproject(this.camera);
+      this.gazeDirection
+        .copy(this.gazeNdcPosition)
+        .sub(this.camera.position)
+        .normalize();
+      this.gazeDesiredPosition
+        .copy(this.camera.position)
+        .addScaledVector(this.gazeDirection, 5);
+
+      if (!this.gazeInitialized) {
+        // Begin from the original forward-facing gaze on the first interaction.
+        this.gazeTargetPosition.copy(this.camera.position);
+        this.gazeInitialized = true;
+      }
+      const damping = 1 - Math.exp(-delta * 5.5);
+      this.gazeTargetPosition.lerp(this.gazeDesiredPosition, damping);
+
+      this.vrm.scene.updateMatrixWorld(true);
+      this.vrm.lookAt.lookAt(this.gazeTargetPosition);
+    },
     onMouseMove (event) {
       this.setCameraPointer(event.clientX, event.clientY);
     },
@@ -375,6 +418,7 @@ export default {
       this.setCameraPointer(touch.clientX, touch.clientY);
     },
     setCameraPointer (clientX, clientY) {
+      this.hasGazeInput = true;
       this.cameraPointer.set(
         THREE.MathUtils.clamp(clientX / window.innerWidth * 2 - 1, -1, 1),
         THREE.MathUtils.clamp(clientY / window.innerHeight * 2 - 1, -1, 1)
