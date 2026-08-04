@@ -33,6 +33,7 @@ export default {
     this.vrm = null;
     this.idleBones = {};
     this.idlePose = {};
+    this.forearmTwistAxes = {};
     this.groundLevel = null;
     this.contactShadow = null;
     this.shadowGroundY = null;
@@ -47,6 +48,15 @@ export default {
     this.gazeDesiredPosition = new THREE.Vector3();
     this.gazeInitialized = false;
     this.hasGazeInput = false;
+    this.tapPointer = new THREE.Vector2();
+    this.pointerDownPosition = new THREE.Vector2();
+    this.chestScreenPosition = new THREE.Vector3();
+    this.leftShoulderScreenPosition = new THREE.Vector3();
+    this.rightShoulderScreenPosition = new THREE.Vector3();
+    this.activePointerId = null;
+    this.chestTapCount = 0;
+    this.angryStartedAt = null;
+    this.angryShakeOffset = new THREE.Vector3();
     this.onThemeChange = this.updateTheme.bind(this);
     window.addEventListener('themechange', this.onThemeChange);
     this.nextBlinkAt = 1.5 + Math.random() * 2;
@@ -58,6 +68,9 @@ export default {
     window.removeEventListener('mousemove', this.onMouseMove);
     window.removeEventListener('touchstart', this.onTouch);
     window.removeEventListener('touchmove', this.onTouch);
+    window.removeEventListener('pointerdown', this.onPointerDown);
+    window.removeEventListener('pointerup', this.onPointerUp);
+    window.removeEventListener('pointercancel', this.onPointerCancel);
     document.removeEventListener('mouseleave', this.onMouseLeave);
     window.removeEventListener('resize', this.onResize);
     window.removeEventListener('themechange', this.onThemeChange);
@@ -103,6 +116,9 @@ export default {
       window.addEventListener('mousemove', this.onMouseMove, { passive: true });
       window.addEventListener('touchstart', this.onTouch, { passive: true });
       window.addEventListener('touchmove', this.onTouch, { passive: true });
+      window.addEventListener('pointerdown', this.onPointerDown, { passive: true });
+      window.addEventListener('pointerup', this.onPointerUp, { passive: true });
+      window.addEventListener('pointercancel', this.onPointerCancel, { passive: true });
       document.addEventListener('mouseleave', this.onMouseLeave);
       window.addEventListener('resize', this.onResize);
 
@@ -158,6 +174,16 @@ export default {
         }
       });
 
+      vrm.scene.updateMatrixWorld(true);
+      [['leftLowerArm', 'leftHand'], ['rightLowerArm', 'rightHand']].forEach(([lowerArmName, handName]) => {
+        const lowerArm = this.idleBones[lowerArmName];
+        const hand = this.idleBones[handName];
+        if (lowerArm && hand) {
+          const handPosition = hand.getWorldPosition(new THREE.Vector3());
+          this.forearmTwistAxes[lowerArmName] = lowerArm.worldToLocal(handPosition).normalize();
+        }
+      });
+
       this.vrm = vrm;
       if (vrm.lookAt) {
         // We update the target manually so the eyes ease toward the pointer.
@@ -203,6 +229,10 @@ export default {
     updateIdleAnimation (elapsed) {
       if (!this.vrm || !this.idleBones.hips) return;
 
+      // Remove the previous frame's shake before applying the current pose.
+      this.vrm.scene.position.sub(this.angryShakeOffset);
+      this.angryShakeOffset.set(0, 0, 0);
+
       // Several slightly different cycles keep the idle pose from looking mechanical.
       const breath = Math.sin(elapsed * 1.45);
       const sway = Math.sin(elapsed * 0.52);
@@ -211,6 +241,25 @@ export default {
       const handMotion = (Math.sin(elapsed * 0.78 + 0.45) + 1) / 2;
       const legMotion = Math.sin(elapsed * 0.46 + 1.1);
       const stanceShift = legMotion;
+      const angryAge = this.angryStartedAt === null
+        ? null
+        : elapsed - this.angryStartedAt;
+      const angryPoseIn = angryAge === null
+        ? 0
+        : THREE.MathUtils.smoothstep(angryAge, 0, 0.35);
+      const angryPoseOut = angryAge === null
+        ? 0
+        : 1 - THREE.MathUtils.smoothstep(angryAge, 4.4, 5);
+      const angryPoseWeight = Math.min(angryPoseIn, angryPoseOut);
+      let stompLift = 0;
+      if (angryAge !== null && angryAge < 5) {
+        const stompPhase = angryAge % 1;
+        if (stompPhase < 0.62) {
+          stompLift = stompPhase < 0.34
+            ? THREE.MathUtils.smoothstep(stompPhase, 0, 0.34)
+            : 1 - THREE.MathUtils.smoothstep(stompPhase, 0.34, 0.62);
+        }
+      }
 
       const setRotation = (name, x, y, z) => {
         const bone = this.idleBones[name];
@@ -227,7 +276,7 @@ export default {
       const hips = this.idleBones.hips;
       const hipsPose = this.idlePose.hips;
       hips.position.set(
-        hipsPose.position.x + sway * 0.006 + stanceShift * 0.018,
+        hipsPose.position.x + sway * 0.006 + stanceShift * 0.018 + stompLift * 0.012,
         hipsPose.position.y + breath * 0.012,
         hipsPose.position.z
       );
@@ -238,27 +287,36 @@ export default {
       setRotation('head', breath * 0.012, look * 0.022, -weightShift * 0.012);
       setRotation('leftShoulder', breath * 0.018, sway * 0.014, weightShift * 0.025);
       setRotation('rightShoulder', -breath * 0.018, -sway * 0.014, weightShift * 0.025);
-      setRotation('leftUpperArm', breath * 0.05, weightShift * 0.026, breath * 0.038);
-      setRotation('rightUpperArm', -breath * 0.05, -weightShift * 0.026, -breath * 0.038);
-      setRotation('leftLowerArm', handMotion * 0.025, -0.07 - handMotion * 0.07, breath * 0.018);
-      setRotation('rightLowerArm', -handMotion * 0.025, 0.07 + handMotion * 0.07, -breath * 0.018);
+      setRotation('leftUpperArm', breath * 0.05 - angryPoseWeight * 0.05, weightShift * 0.026 - angryPoseWeight * 0.05, breath * 0.038 - angryPoseWeight * 1.45);
+      setRotation('rightUpperArm', -breath * 0.05 + angryPoseWeight * 0.05, -weightShift * 0.026 + angryPoseWeight * 0.05, -breath * 0.038 + angryPoseWeight * 1.45);
+      setRotation('leftLowerArm', handMotion * 0.025, -0.07 - handMotion * 0.07, breath * 0.018 - angryPoseWeight * 1.55);
+      setRotation('rightLowerArm', -handMotion * 0.025, 0.07 + handMotion * 0.07, -breath * 0.018 + angryPoseWeight * 1.55);
       setRotation('leftHand', breath * 0.035, handMotion * 0.045, handMotion * 0.075);
       setRotation('rightHand', -breath * 0.035, -handMotion * 0.045, -handMotion * 0.075);
+
+      const leftForearmAxis = this.forearmTwistAxes.leftLowerArm;
+      const rightForearmAxis = this.forearmTwistAxes.rightLowerArm;
+      if (leftForearmAxis) {
+        this.idleBones.leftLowerArm.rotateOnAxis(leftForearmAxis, -angryPoseWeight * 1.45);
+      }
+      if (rightForearmAxis) {
+        this.idleBones.rightLowerArm.rotateOnAxis(rightForearmAxis, angryPoseWeight * 1.45);
+      }
 
       // Alternate the supporting leg, soften the knees, and counter-rotate the feet.
       const leftKneeBend = 0.06 + (legMotion + 1) * 0.12;
       const rightKneeBend = 0.06 + (1 - legMotion) * 0.12;
       setRotation('leftUpperLeg', -leftKneeBend * 0.5, 0, -stanceShift * 0.025);
-      setRotation('rightUpperLeg', -rightKneeBend * 0.5, 0, -stanceShift * 0.025);
+      setRotation('rightUpperLeg', -rightKneeBend * 0.5 - stompLift * 0.18, 0, -stanceShift * 0.025);
       setRotation('leftLowerLeg', leftKneeBend, 0, stanceShift * 0.015);
-      setRotation('rightLowerLeg', rightKneeBend, 0, stanceShift * 0.015);
+      setRotation('rightLowerLeg', rightKneeBend + stompLift * 0.32, 0, stanceShift * 0.015);
       setRotation('leftFoot', -leftKneeBend * 0.58, 0, stanceShift * 0.022);
-      setRotation('rightFoot', -rightKneeBend * 0.58, 0, stanceShift * 0.022);
+      setRotation('rightFoot', -rightKneeBend * 0.58 - stompLift * 0.14, 0, stanceShift * 0.022);
       setRotation('leftToes', leftKneeBend * 0.22, 0, 0);
       setRotation('rightToes', rightKneeBend * 0.22, 0, 0);
 
       // Keep the fingers loosely curled and gently open and close each hand.
-      const fingerCurl = 0.18 + handMotion * 0.2;
+      const fingerCurl = 0.18 + handMotion * 0.2 + angryPoseWeight * 1.35;
       const fingerOffsets = {
         Index: 0,
         Middle: 0.025,
@@ -280,15 +338,17 @@ export default {
           });
         });
 
-        const thumbCurl = 0.1 + handMotion * 0.14;
-        setRotation(`${side}ThumbProximal`, 0, direction * thumbCurl * 0.45, direction * thumbCurl);
-        setRotation(`${side}ThumbIntermediate`, 0, 0, direction * thumbCurl * 0.85);
-        setRotation(`${side}ThumbDistal`, 0, 0, direction * thumbCurl * 0.55);
+        const thumbCurl = 0.1 + handMotion * 0.14 + angryPoseWeight * 1.45;
+        setRotation(`${side}ThumbProximal`, 0, direction * thumbCurl * 0.75, direction * thumbCurl);
+        setRotation(`${side}ThumbIntermediate`, 0, direction * thumbCurl * 0.15, direction * thumbCurl);
+        setRotation(`${side}ThumbDistal`, 0, 0, direction * thumbCurl * 0.75);
       });
 
       this.keepFeetGrounded();
+      this.updateAngryShake(elapsed);
       this.updateContactShadow();
       this.updateBlink(elapsed);
+      this.updateAngryExpression(elapsed);
     },
     getLowestFootPosition () {
       const footPosition = new THREE.Vector3();
@@ -354,6 +414,37 @@ export default {
         }
       }
     },
+    updateAngryExpression (elapsed) {
+      if (this.angryStartedAt === null) return;
+
+      const blendShape = this.vrm && this.vrm.blendShapeProxy;
+      if (!blendShape) return;
+
+      const age = elapsed - this.angryStartedAt;
+      blendShape.setValue(VRMSchema.BlendShapePresetName.Angry, 1);
+
+      if (age >= 5) {
+        blendShape.setValue(VRMSchema.BlendShapePresetName.Angry, 0);
+        this.angryStartedAt = null;
+      }
+    },
+    updateAngryShake (elapsed) {
+      if (this.angryStartedAt === null) return;
+
+      const age = elapsed - this.angryStartedAt;
+      if (age >= 5) return;
+
+      const fadeIn = THREE.MathUtils.clamp(age / 0.08, 0, 1);
+      const fadeOut = THREE.MathUtils.clamp((5 - age) / 0.3, 0, 1);
+      const strength = Math.min(fadeIn, fadeOut);
+      this.angryShakeOffset.set(
+        Math.sin(elapsed * 78) * 0.0015 * strength,
+        Math.sin(elapsed * 91 + 0.7) * 0.00046 * strength,
+        Math.sin(elapsed * 69 + 1.4) * 0.0007 * strength
+      );
+      this.vrm.scene.position.add(this.angryShakeOffset);
+      this.vrm.scene.updateMatrixWorld(true);
+    },
     animate () {
       this.animationFrameId = requestAnimationFrame(this.animate);
 
@@ -416,6 +507,78 @@ export default {
       if (!touch) return;
 
       this.setCameraPointer(touch.clientX, touch.clientY);
+    },
+    onPointerDown (event) {
+      if (this.activePointerId !== null) return;
+
+      this.activePointerId = event.pointerId;
+      this.pointerDownPosition.set(event.clientX, event.clientY);
+    },
+    onPointerUp (event) {
+      if (event.pointerId !== this.activePointerId) return;
+
+      const movement = this.pointerDownPosition.distanceTo(
+        this.tapPointer.set(event.clientX, event.clientY)
+      );
+      this.activePointerId = null;
+      if (movement > 12) return;
+
+      this.registerChestTap(event.clientX, event.clientY);
+    },
+    onPointerCancel (event) {
+      if (event.pointerId === this.activePointerId) {
+        this.activePointerId = null;
+      }
+    },
+    registerChestTap (clientX, clientY) {
+      const chest = this.idleBones.chest;
+      const leftShoulder = this.idleBones.leftShoulder;
+      const rightShoulder = this.idleBones.rightShoulder;
+      if (!this.vrm || !chest || !leftShoulder || !rightShoulder) return;
+
+      this.camera.updateMatrixWorld();
+      this.vrm.scene.updateMatrixWorld(true);
+
+      chest.getWorldPosition(this.chestScreenPosition).project(this.camera);
+      leftShoulder.getWorldPosition(this.leftShoulderScreenPosition).project(this.camera);
+      rightShoulder.getWorldPosition(this.rightShoulderScreenPosition).project(this.camera);
+
+      const toScreenX = (position) => (position.x + 1) * window.innerWidth / 2;
+      const toScreenY = (position) => (1 - position.y) * window.innerHeight / 2;
+      const shoulderCenterX = (
+        toScreenX(this.leftShoulderScreenPosition) +
+        toScreenX(this.rightShoulderScreenPosition)
+      ) / 2;
+      const shoulderCenterY = (
+        toScreenY(this.leftShoulderScreenPosition) +
+        toScreenY(this.rightShoulderScreenPosition)
+      ) / 2;
+      const chestX = THREE.MathUtils.lerp(
+        shoulderCenterX,
+        toScreenX(this.chestScreenPosition),
+        0.55
+      );
+      const chestY = THREE.MathUtils.lerp(
+        shoulderCenterY,
+        toScreenY(this.chestScreenPosition),
+        0.55
+      );
+      const shoulderWidth = Math.abs(
+        toScreenX(this.rightShoulderScreenPosition) -
+        toScreenX(this.leftShoulderScreenPosition)
+      );
+      const horizontalRadius = Math.max(shoulderWidth * 1.15, 64);
+      const verticalRadius = Math.max(shoulderWidth, 64);
+      const normalizedX = (clientX - chestX) / horizontalRadius;
+      const normalizedY = (clientY - chestY) / verticalRadius;
+      const hitChest = normalizedX * normalizedX + normalizedY * normalizedY <= 1;
+      if (!hitChest) return;
+
+      this.chestTapCount += 1;
+      if (this.chestTapCount >= 5) {
+        this.chestTapCount = 0;
+        this.angryStartedAt = this.clock.elapsedTime;
+      }
     },
     setCameraPointer (clientX, clientY) {
       this.hasGazeInput = true;
