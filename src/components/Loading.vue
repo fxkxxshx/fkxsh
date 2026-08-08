@@ -53,7 +53,7 @@ export default {
   @include rg-ew;
 
   &.is-hide {
-    animation: loadingHide 1.2s cubic-bezier(0.9, 0, 0.1, 1) 2s forwards;
+    animation: loadingHide 1.2s cubic-bezier(0.9, 0, 0.09, 1) 2s forwards;
     transform: translate(0, 0);
     will-change: transform;
   }
