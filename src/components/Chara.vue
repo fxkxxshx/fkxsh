@@ -310,11 +310,11 @@ export default {
       const leftKneeBend = 0.06 + (legMotion + 1) * 0.12;
       const rightKneeBend = 0.06 + (1 - legMotion) * 0.12;
       setRotation('leftUpperLeg', -leftKneeBend * 0.5, 0, -stanceShift * 0.025);
-      setRotation('rightUpperLeg', -rightKneeBend * 0.5 - stompLift * 0.18, 0, -stanceShift * 0.025);
+      setRotation('rightUpperLeg', -rightKneeBend * 0.5 + stompLift * 0.7, 0, -stanceShift * 0.025);
       setRotation('leftLowerLeg', leftKneeBend, 0, stanceShift * 0.015);
-      setRotation('rightLowerLeg', rightKneeBend + stompLift * 0.32, 0, stanceShift * 0.015);
+      setRotation('rightLowerLeg', rightKneeBend - stompLift * 1.1, 0, stanceShift * 0.015);
       setRotation('leftFoot', -leftKneeBend * 0.58, 0, stanceShift * 0.022);
-      setRotation('rightFoot', -rightKneeBend * 0.58 - stompLift * 0.14, 0, stanceShift * 0.022);
+      setRotation('rightFoot', -rightKneeBend * 0.58 + stompLift * 0.35, 0, stanceShift * 0.022);
       setRotation('leftToes', leftKneeBend * 0.22, 0, 0);
       setRotation('rightToes', rightKneeBend * 0.22, 0, 0);
 
