@@ -34,6 +34,7 @@ export default {
     this.idleBones = {};
     this.idlePose = {};
     this.forearmTwistAxes = {};
+    this.thumbTwistAxes = {};
     this.groundLevel = null;
     this.contactShadow = null;
     this.shadowGroundY = null;
@@ -56,7 +57,6 @@ export default {
     this.activePointerId = null;
     this.chestTapCount = 0;
     this.angryStartedAt = null;
-    this.angryShakeOffset = new THREE.Vector3();
     this.onThemeChange = this.updateTheme.bind(this);
     window.addEventListener('themechange', this.onThemeChange);
     this.nextBlinkAt = 1.5 + Math.random() * 2;
@@ -169,7 +169,8 @@ export default {
           this.idleBones[key] = bone;
           this.idlePose[key] = {
             position: bone.position.clone(),
-            rotation: bone.rotation.clone()
+            rotation: bone.rotation.clone(),
+            scale: bone.scale.clone()
           };
         }
       });
@@ -181,6 +182,12 @@ export default {
         if (lowerArm && hand) {
           const handPosition = hand.getWorldPosition(new THREE.Vector3());
           this.forearmTwistAxes[lowerArmName] = lowerArm.worldToLocal(handPosition).normalize();
+        }
+      });
+      ['left', 'right'].forEach((side) => {
+        const intermediate = this.idleBones[`${side}ThumbIntermediate`];
+        if (intermediate) {
+          this.thumbTwistAxes[side] = intermediate.position.clone().normalize();
         }
       });
 
@@ -228,10 +235,6 @@ export default {
     },
     updateIdleAnimation (elapsed) {
       if (!this.vrm || !this.idleBones.hips) return;
-
-      // Remove the previous frame's shake before applying the current pose.
-      this.vrm.scene.position.sub(this.angryShakeOffset);
-      this.angryShakeOffset.set(0, 0, 0);
 
       // Several slightly different cycles keep the idle pose from looking mechanical.
       const breath = Math.sin(elapsed * 1.45);
@@ -316,7 +319,7 @@ export default {
       setRotation('rightToes', rightKneeBend * 0.22, 0, 0);
 
       // Keep the fingers loosely curled and gently open and close each hand.
-      const fingerCurl = 0.18 + handMotion * 0.2 + angryPoseWeight * 1.35;
+      const fingerCurl = 0.18 + handMotion * 0.2 + angryPoseWeight * 1.52;
       const fingerOffsets = {
         Index: 0,
         Middle: 0.025,
@@ -324,9 +327,9 @@ export default {
         Little: 0.085
       };
       const jointStrength = {
-        Proximal: 1,
-        Intermediate: 0.82,
-        Distal: 0.58
+        Proximal: 0.86,
+        Intermediate: 1,
+        Distal: 0.68
       };
 
       ['left', 'right'].forEach((side) => {
@@ -338,14 +341,45 @@ export default {
           });
         });
 
-        const thumbCurl = 0.1 + handMotion * 0.14 + angryPoseWeight * 1.45;
-        setRotation(`${side}ThumbProximal`, 0, direction * thumbCurl * 0.75, direction * thumbCurl);
-        setRotation(`${side}ThumbIntermediate`, 0, direction * thumbCurl * 0.15, direction * thumbCurl);
-        setRotation(`${side}ThumbDistal`, 0, 0, direction * thumbCurl * 0.75);
+        const thumbIdleCurl = 0.1 + handMotion * 0.14;
+        // In the angry fist, fold the thumb into the palm before the other
+        // fingers close so it stays tucked underneath them.
+        setRotation(
+          `${side}ThumbProximal`,
+          0,
+          direction * (thumbIdleCurl * 0.75 + angryPoseWeight * 1.32),
+          direction * (thumbIdleCurl + angryPoseWeight * 0.98)
+        );
+        setRotation(
+          `${side}ThumbIntermediate`,
+          0,
+          direction * (thumbIdleCurl * 0.15 + angryPoseWeight * 0.62),
+          direction * (thumbIdleCurl + angryPoseWeight * 1.02)
+        );
+        setRotation(
+          `${side}ThumbDistal`,
+          0,
+          0,
+          direction * (thumbIdleCurl * 0.75 + angryPoseWeight * 0.82)
+        );
+
+        const thumbProximal = this.idleBones[`${side}ThumbProximal`];
+        const thumbProximalPose = this.idlePose[`${side}ThumbProximal`];
+        if (thumbProximal && thumbProximalPose) {
+          const tuckedScale = 1 - angryPoseWeight * 0.96;
+          thumbProximal.scale.copy(thumbProximalPose.scale).multiplyScalar(tuckedScale);
+        }
+
+        const thumbTwistAxis = this.thumbTwistAxes[side];
+        if (thumbTwistAxis) {
+          this.idleBones[`${side}ThumbProximal`].rotateOnAxis(
+            thumbTwistAxis,
+            angryPoseWeight * 0.08
+          );
+        }
       });
 
       this.keepFeetGrounded();
-      this.updateAngryShake(elapsed);
       this.updateContactShadow();
       this.updateBlink(elapsed);
       this.updateAngryExpression(elapsed);
@@ -427,23 +461,6 @@ export default {
         blendShape.setValue(VRMSchema.BlendShapePresetName.Angry, 0);
         this.angryStartedAt = null;
       }
-    },
-    updateAngryShake (elapsed) {
-      if (this.angryStartedAt === null) return;
-
-      const age = elapsed - this.angryStartedAt;
-      if (age >= 5) return;
-
-      const fadeIn = THREE.MathUtils.clamp(age / 0.08, 0, 1);
-      const fadeOut = THREE.MathUtils.clamp((5 - age) / 0.3, 0, 1);
-      const strength = Math.min(fadeIn, fadeOut);
-      this.angryShakeOffset.set(
-        Math.sin(elapsed * 78) * 0.0015 * strength,
-        Math.sin(elapsed * 91 + 0.7) * 0.00046 * strength,
-        Math.sin(elapsed * 69 + 1.4) * 0.0007 * strength
-      );
-      this.vrm.scene.position.add(this.angryShakeOffset);
-      this.vrm.scene.updateMatrixWorld(true);
     },
     animate () {
       this.animationFrameId = requestAnimationFrame(this.animate);
